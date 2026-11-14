@@ -571,6 +571,15 @@ final class App: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDe
                 extra.append("--confirm")
                 if bring { extra += ["--bring-account", NSUserName()] }
                 extra += GoldenGate.sizeArgs(b["sizeGB"])
+                // macOS 27 is its own install with its own accounts: the one-time report armed in this account never
+                // runs there, so a PC that starts macOS 27 perfectly and one that never reaches its desktop both go
+                // quiet. It is opt-in and the default is not to send; with a yes, setup leaves the answer on the
+                // macOS 27 volume and the kit's start reporter sends from there (bringup/start-report.sh in the kit).
+                let r = NSAlert()
+                r.messageText = "Tell NullMoth how macOS 27 starts on this PC?"
+                r.informativeText = "After macOS 27 first reaches its desktop, it can send one small summary to nullmothsystems.com - the macOS version, this PC's model and processor, the graphics cards, whether the display and the driver came up, and how long the start took. If a start does not reach the desktop, the next start can send that start's own display and driver log lines, at most three times. Names, serial numbers and addresses are taken out. Nothing else is collected and nothing is sent later."
+                r.addButton(withTitle: "Send"); r.addButton(withTitle: "Don't send")
+                if r.runModal() == .alertFirstButtonReturn { extra.append("--report-consent") }
                 // An archive of this build's kit that is already in Downloads is used instead of downloading it again;
                 // setup checks it against the pin either way.
                 let name = GoldenGate.pinValue(App.goldenGatePin() ?? "", "name")

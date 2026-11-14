@@ -88,12 +88,14 @@ ROOT=""; KIT=""; CONFIRM=0; DRVOFF=""; DRVON=""; MAJOR=""; GPUS=""; GPUS_GIVEN=0
 DISPLAYS=""; DISPLAYS_GIVEN=0; APPLEIDS=""; APPLEIDS_GIVEN=0
 DISKUTIL=/usr/sbin/diskutil; TOOLS=""
 KITMODEL=0; CPUV=""; LAPTOP=""; ACCOUNT=""
+REPORT=""; KITTAG=""   # --report yes|no: the owner's answer about start reports from macOS 27; --kit-tag: the kit's release
 # Every step's lines also go to one log on this macOS: a step that stopped can be read afterwards, Send logs takes
 # it, and the app shows its last line while a long step runs. Kept under 1 MB: past that the older half is dropped.
 STEPLOG=/Library/NullMoth/golden-gate/steps.log
 while [ $# -gt 0 ]; do case "$1" in
   --root) ROOT=${2:-}; shift;; --kit) KIT=${2:-}; shift;; --confirm) CONFIRM=1;; --kit-model) KITMODEL=1;;
   --bring-account) ACCOUNT=${2:-}; shift;; --size-gb) SIZE_GB=${2:-}; shift;;
+  --report) REPORT=${2:-}; shift;; --kit-tag) KITTAG=${2:-}; shift;;
   --off) DRVOFF=${2:-}; shift;; --on) DRVON=${2:-}; shift;;
   # test-hook-begin
   --macos-major) MAJOR=${2:-}; shift;; --gpu-id) GPUS="$GPUS ${2:-}"; GPUS_GIVEN=1; shift;;
@@ -104,6 +106,19 @@ while [ $# -gt 0 ]; do case "$1" in
   # test-hook-end
   *) echo "STOP unknown option $1"; echo "RESULT stop"; exit 2;; esac; shift; done
 step() { echo "STEP $*"; }; ok() { echo "OK $*"; }; note() { echo "NOTE $*"; }
+# The owner's answer about start reports is carried onto the macOS 27 data volume ($1) with the kit's release tag. The
+# reporter there (the kit's start-report.sh) collects and sends nothing without the consent file, so "no" and no answer
+# both leave macOS 27 silent, and a later "no" takes an earlier "yes" back.
+report_choice() {
+  local d="$1/Library/NullMoth/report"
+  if [ "$REPORT" = yes ]; then
+    mkdir -p "$d" && : > "$d/consent" || { note "the start-report choice could not be written; macOS 27 will send nothing"; return 0; }
+    case "$KITTAG" in ''|*[!A-Za-z0-9._-]*) rm -f "$d/kit-tag";; *) printf '%s\n' "$KITTAG" > "$d/kit-tag";; esac
+    ok "start reports from macOS 27: on (agreed during setup)"
+  else
+    rm -f "$d/consent"; ok "start reports from macOS 27: off"
+  fi
+}
 step_log() {     # from here on everything this step prints is also appended to the step log; without the right to write it, nothing changes
   # Root writes the folder and the log; everyone may read them: the app, running as the user, follows the log to
   # show its progress bar. The setup that starts this runs with a umask that would leave both owner-only.
@@ -1518,6 +1533,7 @@ finish)
   step "Installing the macOS 27 system package"
   tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. Nothing was changed"
   /bin/bash "$SPAY/$sinst" --payload "$SPAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the v3 system installer stopped; see its lines above. The driver was not installed"
+  report_choice "$DATA"
   step "Installing the macOS 27 driver"
   tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. The system package is installed; the driver is not"
   /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the v3 driver installer stopped; see its lines above"

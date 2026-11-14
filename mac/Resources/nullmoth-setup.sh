@@ -49,7 +49,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --pkg) PKG=$2; shift;; --sha) SHA=$2; shift;; --config) CFG=$2; shift;; --efi) EFI=$2; shift;;
   --tool) TOOL=$2; shift;; --usbmap) USBMAP=$2; shift;; --app) APPBIN=$2; shift;; --dry) DRY=1;; --remove) REMOVE=1;; --verbose) VERB=$2; shift;; --update) UPD=$2; shift;; --collect-logs) COLLECT=$2; shift;;
   --efi-read) EFIREAD=$2; shift;;
-  --golden-gate) GG=$2; shift;; --v3-kit) GGKIT=$2; shift;; --confirm) GGCONFIRM=1;; --v3-install) V3I=$2; shift;; --kit-model) GGKITMODEL=1;; --card-model) GGCARDMODEL=1;; --bring-account) GGACCOUNT=$2; shift;; --gg-size) GGSIZE=$2; shift;; --v3-kit-file) GGKITFILE=$2; shift;;
+  --golden-gate) GG=$2; shift;; --v3-kit) GGKIT=$2; shift;; --confirm) GGCONFIRM=1;; --v3-install) V3I=$2; shift;; --kit-model) GGKITMODEL=1;; --card-model) GGCARDMODEL=1;; --bring-account) GGACCOUNT=$2; shift;; --gg-size) GGSIZE=$2; shift;; --v3-kit-file) GGKITFILE=$2; shift;; --report-consent) GGREPORT=1;;
   --knob) KNOBS+=("$2"); shift;; --profile) PROFILE=$2; shift;; --gpu-test) GPUTEST=$2; shift;; --backlight) BACKLIGHT=$2; shift;; --hidpi) HIDPI=$2; shift;; --xe) XE=$2; shift;;
   *) echo "STOP unknown option $1"; echo "RESULT stop"; exit 2;; esac; shift; done
 step() { echo "STEP $*"; }; ok() { echo "OK $*"; }; note() { echo "NOTE $*"; }
@@ -1522,7 +1522,7 @@ if [ -n "${GG:-}" ]; then
   GGS="$(dirname "$0")/nullmoth-golden-gate.sh"; [ -f "$GGS" ] || stop "this build of 1401 has no Golden Gate script"
   # The stage step keeps the model the kit sets: the one its reference configuration has started macOS 27 with. The
   # model for the card's generation (--card-model) has not started macOS 27 on a real PC yet, so it is not the default.
-  gg() { /bin/bash "$GGS" "$1" --root "$MP" ${GGKIT:+--kit "$GGKIT"} ${GGCONFIRM:+--confirm} $([ "$1" = stage ] && [ -z "${GGCARDMODEL:-}" ] && echo --kit-model) ${GGACCOUNT:+--bring-account "$GGACCOUNT"} $([ "$1" = installer ] && [ -n "${GGSIZE:-}" ] && echo "--size-gb $GGSIZE") | grep -v '^RESULT '; return "${PIPESTATUS[0]}"; }
+  gg() { /bin/bash "$GGS" "$1" --root "$MP" ${GGKIT:+--kit "$GGKIT"} ${GGCONFIRM:+--confirm} $([ "$1" = stage ] && [ -z "${GGCARDMODEL:-}" ] && echo --kit-model) ${GGACCOUNT:+--bring-account "$GGACCOUNT"} $([ "$1" = installer ] && [ -n "${GGSIZE:-}" ] && echo "--size-gb $GGSIZE") $([ "$1" = finish ] && echo "--report $([ -n "${GGREPORT:-}" ] && echo yes || echo no) --kit-tag $(sed -n 's/^tag //p' "$HERE/v3-kit.pin" 2>/dev/null | head -n 1 | tr -cd 'A-Za-z0-9._-')") | grep -v '^RESULT '; return "${PIPESTATUS[0]}"; }
   if [ "$GG" = all ]; then
     # Every step in order, each only if the one before it passed. What an earlier run already did is not done
     # again: startup files that are staged stay, kernel collections that are made are judged as they are, and a
