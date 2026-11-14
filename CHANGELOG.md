@@ -1,5 +1,15 @@
 # Changelog
 
+## Liberator Beta 3
+- Version 0.3.0, built for its own kit (release tag v3.0.0-beta.3).
+- macOS 27 now runs the 3.0 NVIDIA driver, the same driver generation as the 3.0 release for macOS 15 and 26, built for macOS 27.
+- Fixed a hard freeze as the desktop started: the driver described the whole card memory window to macOS instead of the part the screen uses.
+- Fixed the driver failing to start again after a first failed attempt in the same start.
+- Setup accepts the partition OpenCore started from when it holds more than one OpenCore folder; fetching Apple's signing keys is retried.
+- A PC prepared from the Mac app has its disk and network controllers marked built in (Beta 2 did this only for PCs built from Windows).
+- Optional start reports: with your agreement, macOS 27 tells NullMoth once how its first start went, and reports a start that did not reach the desktop.
+- The kit carries a test package for PCs with only AMD or Intel built-in graphics. It is untried on real hardware.
+
 ## Liberator Beta 2
 - Version 0.2.0, built for its own kit (release tag v3.0.0-beta.2).
 - Preparing again renews the macOS 27 startup files made by an older kit, from macOS 26 or from macOS 27; finished steps are not repeated.
