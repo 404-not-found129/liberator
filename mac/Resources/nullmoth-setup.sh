@@ -161,6 +161,12 @@ owned_amfi_from_prior_record() (
     esac
   done
 )
+booted_mount() { # true when $1 is the mount point of the partition OpenCore's boot-path variable names
+  # The answer is worked out once: booted_part asks diskutil about every partition.
+  if [ -z "${BOOTED_PART_KNOWN:-}" ]; then BOOTED_PART_CACHE=$(booted_part 2>/dev/null) || BOOTED_PART_CACHE=""; BOOTED_PART_KNOWN=1; fi
+  [ -n "$BOOTED_PART_CACHE" ] || return 1
+  [ "$(diskutil info "$1" 2>/dev/null | awk '/Device Identifier:/{print $3; exit}')" = "$BOOTED_PART_CACHE" ]
+}
 ocrel_in() {    # $1 = mount point; prints where OpenCore lives on it (EFI/OC, or EFI/BOOT when OpenCore.efi is BOOTx64.efi)
   # A config made for another Mac model (a rescue stick, another machine's EFI) is never this Mac's: OpenCore sets the
   # model macOS reports from PlatformInfo, so the config that started this Mac names hw.model. (Measured 10-07: the boot-path
@@ -174,7 +180,11 @@ ocrel_in() {    # $1 = mount point; prints where OpenCore lives on it (EFI/OC, o
     for k in PlatformInfo.Generic.SystemProductName PlatformInfo.SMBIOS.SystemProductName PlatformInfo.DataHub.SystemProductName \
              NVRAM.Add.4D1FDA02-38C7-4A6A-9CC6-4BCCA8B30102.OCLP-Model; do
       cm=$(plutil -extract "$k" raw -o - "$c" 2>/dev/null); [ -n "$cm" ] && break; done
-    if [ -n "$m" ] && [ -n "$cm" ] && [ "$cm" != "$m" ]; then
+    # The model rule guards against editing another machine's files when nothing says where this Mac started from.
+    # When OpenCore itself names this partition as the one it started from, that is the stronger fact: the model can
+    # differ honestly (the startup files were switched or put back since the start, so the running model is the old
+    # one until the next restart).
+    if [ -n "$m" ] && [ -n "$cm" ] && [ "$cm" != "$m" ] && ! booted_mount "$1"; then
       # After Golden Gate switched the startup files and before the first restart, EFI/OC holds the macOS 27 files
       # (their model) and the files this Mac started from are kept beside them as EFI/OC-26. That partition is still
       # this Mac's: a second run, Cancel and Remove must find it.
