@@ -109,14 +109,37 @@ step() { echo "STEP $*"; }; ok() { echo "OK $*"; }; note() { echo "NOTE $*"; }
 # The owner's answer about start reports is carried onto the macOS 27 data volume ($1) with the kit's release tag. The
 # reporter there (the kit's start-report.sh) collects and sends nothing without the consent file, so "no" and no answer
 # both leave macOS 27 silent, and a later "no" takes an earlier "yes" back.
+# report_drop <name>: remove one file of the report folder on the data volume, and only when no part of the path to
+# it is a link; the file itself may be one, since removing a link never touches what it names
+report_drop() {
+  local cur=$DATA part
+  [ -n "$DATA" ] && [ -d "$DATA" ] && [ ! -L "$DATA" ] || return 1
+  for part in Library NullMoth report; do
+    cur="$cur/$part"
+    [ ! -L "$cur" ] || return 1
+    [ -d "$cur" ] || return 0
+  done
+  rm -f "$cur/$1"
+}
+# report_choice <data volume>: both files are written by root onto a volume other software has also written to, so
+# they go through put_on_data (no link anywhere on the path, a private temporary file, then a rename)
 report_choice() {
-  local d="$1/Library/NullMoth/report"
+  local DATA=$1 t
   if [ "$REPORT" = yes ]; then
-    mkdir -p "$d" && : > "$d/consent" || { note "the start-report choice could not be written; macOS 27 will send nothing"; return 0; }
-    case "$KITTAG" in ''|*[!A-Za-z0-9._-]*) rm -f "$d/kit-tag";; *) printf '%s\n' "$KITTAG" > "$d/kit-tag";; esac
+    t=$(mktemp "${TMPDIR:-/tmp}/gg-report.XXXXXX") || { note "the start-report choice could not be written; macOS 27 will send nothing"; return 0; }
+    : > "$t"
+    if ! put_on_data "$t" Library/NullMoth/report/consent; then
+      rm -f "$t"; note "the start-report choice could not be written; macOS 27 will send nothing"; return 0
+    fi
+    case "$KITTAG" in
+      ''|*[!A-Za-z0-9._-]*) report_drop kit-tag || true;;
+      *) printf '%s\n' "$KITTAG" > "$t"; put_on_data "$t" Library/NullMoth/report/kit-tag || note "the kit's tag could not be recorded for start reports";;
+    esac
+    rm -f "$t"
     ok "start reports from macOS 27: on (agreed during setup)"
   else
-    rm -f "$d/consent"; ok "start reports from macOS 27: off"
+    if report_drop consent; then ok "start reports from macOS 27: off"
+    else note "the start-report folder on the new volume is not a plain folder; it was left alone"; fi
   fi
 }
 step_log() {     # from here on everything this step prints is also appended to the step log; without the right to write it, nothing changes

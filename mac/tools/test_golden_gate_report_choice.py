@@ -15,17 +15,25 @@ def arm(name, ok, detail=""):
     print(("ok   " if ok else "FAIL ") + name + (f" ({detail})" if detail and not ok else ""))
     failed += 0 if ok else 1
 
-start = gg.index("report_choice() {")
-body = gg[start:gg.index("\n}\n", start) + 3]
+def fn(name):
+    start = gg.index(name + "() {")
+    return gg[start:gg.index("\n}\n", start) + 3]
+body = fn("put_on_data") + fn("report_drop") + fn("report_choice")
 
-def run(report, tag, pre=()):
+def run(report, tag, pre=(), link=None):
     with tempfile.TemporaryDirectory() as d:
-        vol = pathlib.Path(d) / "vol"; rep = vol / "Library/NullMoth/report"
+        vol = pathlib.Path(d) / "vol"; rep = vol / "Library/NullMoth/report"; vol.mkdir()
+        away = pathlib.Path(d) / "away"; away.mkdir(); (away / "consent").write_text("theirs\n"); (away / "victim").write_text("theirs\n")
+        if link == "folder":      # the report folder itself is a link to somewhere else
+            rep.parent.mkdir(parents=True); rep.symlink_to(away)
+        if link == "file":        # the two files are links to a file somewhere else
+            rep.mkdir(parents=True); (rep / "consent").symlink_to(away / "victim"); (rep / "kit-tag").symlink_to(away / "victim")
         for f in pre:
             rep.mkdir(parents=True, exist_ok=True); (rep / f).write_text("x\n")
         script = 'ok() { echo "OK $*"; }; note() { echo "NOTE $*"; }\n' + body + f'\nREPORT="$1"; KITTAG="$2"; report_choice "$3"\n'
         out = subprocess.run(["/bin/bash", "-c", script, "x", report, tag, str(vol)], capture_output=True, text=True)
         have = {p.name: p.read_text() for p in rep.iterdir()} if rep.is_dir() else {}
+        if link: have = {"away": sorted((q.name, q.read_text()) for q in away.iterdir()), "linked": (rep / "consent").is_symlink() or rep.is_symlink()}
         return out.returncode, out.stdout, have
 
 rc, out, have = run("yes", "v3.0.0-beta.3")
@@ -41,6 +49,16 @@ rc, out, have = run("yes", "v3; rm -rf /")
 arm("a tag that is not a plain release name is not written", rc == 0 and "consent" in have and "kit-tag" not in have, str(have))
 rc, out, have = run("YES", "v3.0.0-beta.3")
 arm("control: only the exact word yes turns reports on", "consent" not in have, str(have))
+
+UNTOUCHED = [("consent", "theirs\n"), ("victim", "theirs\n")]
+rc, out, have = run("yes", "v3.0.0-beta.3", link="folder")
+arm("a report folder that is a link is not written through, and says nothing will be sent", rc == 0 and have["away"] == UNTOUCHED and "will send nothing" in out, str(have) + out)
+rc, out, have = run("no", "v3.0.0-beta.3", link="folder")
+arm("a no does not remove a file through a linked folder", rc == 0 and have["away"] == UNTOUCHED and "left alone" in out, str(have) + out)
+rc, out, have = run("yes", "v3.0.0-beta.3", link="file")
+arm("a consent file that is a link is refused; what it names is untouched", rc == 0 and have["away"] == UNTOUCHED and "will send nothing" in out, str(have) + out)
+rc, out, have = run("no", "v3.0.0-beta.3", link="file")
+arm("a no removes a linked consent file itself, never what it names", rc == 0 and have["away"] == UNTOUCHED and not have["linked"], str(have) + out)
 
 arm("the script takes --report and --kit-tag", "--report) REPORT=${2:-}; shift;; --kit-tag) KITTAG=${2:-}; shift;;" in gg)
 arm("the choice is written right after the system package is installed",
