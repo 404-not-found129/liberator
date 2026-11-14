@@ -85,7 +85,7 @@ MODEL_RTX50=Mac17,15
 
 STEP=${1:-}; [ $# -gt 0 ] && shift
 ROOT=""; KIT=""; CONFIRM=0; DRVOFF=""; DRVON=""; MAJOR=""; GPUS=""; GPUS_GIVEN=0; DISK_GB=""; DEVIDS=""; DEVIDS_GIVEN=0; ESPFREE=""
-DISPLAYS=""; DISPLAYS_GIVEN=0; APPLEIDS=""; APPLEIDS_GIVEN=0
+PCITREE=""; DISPLAYS=""; DISPLAYS_GIVEN=0; APPLEIDS=""; APPLEIDS_GIVEN=0
 DISKUTIL=/usr/sbin/diskutil; TOOLS=""
 KITMODEL=0; CPUV=""; LAPTOP=""; ACCOUNT=""
 REPORT=""; KITTAG=""   # --report yes|no: the owner's answer about start reports from macOS 27; --kit-tag: the kit's release
@@ -98,7 +98,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --report) REPORT=${2:-}; shift;; --kit-tag) KITTAG=${2:-}; shift;;
   --off) DRVOFF=${2:-}; shift;; --on) DRVON=${2:-}; shift;;
   # test-hook-begin
-  --macos-major) MAJOR=${2:-}; shift;; --gpu-id) GPUS="$GPUS ${2:-}"; GPUS_GIVEN=1; shift;;
+  --macos-major) MAJOR=${2:-}; shift;; --gpu-id) GPUS="$GPUS ${2:-}"; GPUS_GIVEN=1; shift;; --pci-tree) PCITREE=${2:-}; shift;;
   --disk-free-gb) DISK_GB=${2:-}; shift;; --esp-free-kb) ESPFREE=${2:-}; shift;; --device-id) DEVIDS="$DEVIDS ${2:-}"; DEVIDS_GIVEN=1; shift;;
   --diskutil) DISKUTIL=${2:-}; shift;; --tools) TOOLS=${2:-}; shift;; --kc-work) KCWORK=${2:-}; shift;; --lay-work) LAYWORK=${2:-}; shift;; --preboot) PREBOOT=${2:-}; shift;; --step-log) STEPLOG=${2:-}; shift;;
   --cpu-vendor) CPUV=${2:-}; shift;; --laptop) LAPTOP=${2:-}; shift;;
@@ -590,6 +590,56 @@ packages_or_stop() {   # the kit's two packages, in its private copy: PAY/inst t
 WHY=""
 bad() { WHY=$*; return 1; }
 cget() { plutil -extract "$1" raw -o - "$AC" 2>/dev/null; }
+# builtin_paths: the firmware device path of each storage and network controller on this PC's PCI bus, one per line.
+# Read from the I/O registry: a controller's path is the PCI root it hangs from (its ACPI _UID) and the device and
+# function numbers of every PCI device above it and of itself. Storage is PCI class 01 and network class 02; a disk or
+# adapter on USB sits behind a USB controller (class 0c) and is never listed. A controller whose root has no numeric
+# _UID, or whose address does not read as hex, is left out. --pci-tree gives the registry text for a test; with the
+# other test inputs given and no tree, nothing is scanned.
+builtin_paths() {
+  if [ -n "$PCITREE" ]; then cat "$PCITREE"
+  elif [ $GPUS_GIVEN = 1 ]; then return 0
+  else ioreg -p IOService -l -w0 2>/dev/null; fi | awk '
+    /^[ |]*\+-o / {
+      d = index($0, "+-o"); while (top > 0 && sd[top] >= d) top--
+      line = $0; sub(/^[ |]*\+-o /, "", line)
+      name = line; sub(/  <class .*/, "", name)
+      cls = line; sub(/.*<class /, "", cls); sub(/,.*/, "", cls)
+      top++; sd[top] = d; sc[top] = cls; sa[top] = ""; su[top] = ""
+      if (cls == "IOPCIDevice") { a = name; if (a ~ /@/) sub(/.*@/, "", a); else a = "0"; sa[top] = a }
+      next
+    }
+    top > 0 && sc[top] == "IOACPIPlatformDevice" && /^[ |]*"_UID" = / { v = $0; sub(/.*"_UID" = /, "", v); gsub(/[" ]/, "", v); su[top] = v }
+    top > 0 && sc[top] == "IOPCIDevice" && /^[ |]*"class-code" = <[0-9a-f]+>/ {
+      v = $0; sub(/.*</, "", v); sub(/>.*/, "", v); c = substr(v, 5, 2)
+      if (c != "01" && c != "02") next
+      path = ""; uid = ""; good = 1
+      for (i = 1; i <= top; i++) {
+        if (sc[i] == "IOACPIPlatformDevice" && path == "") uid = su[i]
+        if (sc[i] != "IOPCIDevice") continue
+        n = split(sa[i], q, ","); dev = q[1]; fn = (n > 1) ? q[2] : "0"
+        if (n > 2 || dev !~ /^[0-9A-Fa-f]+$/ || fn !~ /^[0-9A-Fa-f]+$/) good = 0
+        path = path "/Pci(0x" toupper(dev) ",0x" toupper(fn) ")"
+      }
+      if (good && uid ~ /^[0-9]+$/) printf "PciRoot(0x%X)%s\n", uid + 0, path
+    }' | sort -u
+}
+# builtin_devices: this PC's own storage and network controllers are marked built-in ("built-in" = 01 under
+# DeviceProperties), the way a Mac's are. Without it macOS 27 reads the internal disk as external and the wired port
+# as neither built-in nor primary, and the Apple account cannot sign in. A value already there is kept. A Mac needs none.
+builtin_devices() {
+  local path k
+  [ "$EFIKIND" != mac ] || return 0
+  [ "$(plutil -type DeviceProperties "$AC" 2>/dev/null)" = dictionary ] || plutil -insert DeviceProperties -json '{}' "$AC" || { bad "the config has no room for device properties"; return 1; }
+  [ "$(plutil -type DeviceProperties.Add "$AC" 2>/dev/null)" = dictionary ] || plutil -insert DeviceProperties.Add -json '{}' "$AC" || { bad "the config has no room for device properties"; return 1; }
+  builtin_paths | while IFS= read -r path; do
+    printf '%s' "$path" | grep -Eq '^PciRoot\(0x[0-9A-F]+\)(/Pci\(0x[0-9A-F]+,0x[0-9A-F]+\))+$' || continue
+    k="DeviceProperties.Add.$path"
+    [ "$(plutil -type "$k" "$AC" 2>/dev/null)" = dictionary ] || plutil -insert "$k" -json '{}' "$AC" || { echo "NOTE could not mark $path built-in"; continue; }
+    plutil -type "$k.built-in" "$AC" >/dev/null 2>&1 && continue
+    plutil -insert "$k.built-in" -data AQ== "$AC" && echo "built-in: $path" || echo "NOTE could not mark $path built-in"
+  done
+}
 bundle_at() { local b; b=$(cget "Kernel.Add.$1.BundlePath") || return 1; echo "${b##*/}"; }
 # The name of one kernel patch of the config being written: a digest of what OpenCore matches on. The kit's maker
 # computes the same digest (tools/kernel_patches_27.py mark): the fields joined with '|', data as base64, numbers in
@@ -977,6 +1027,7 @@ EOF
       fi
       i=$((i + 1)); done
   fi
+  builtin_devices || return 1
   plutil -lint "$AC" >/dev/null || { bad "the changed config is not a valid property list"; return 1; }
 }
 

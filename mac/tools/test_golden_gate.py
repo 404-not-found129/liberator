@@ -511,6 +511,31 @@ with tempfile.TemporaryDirectory() as td:
     pa, sb = (tree(os.path.join(x.efi, "EFI", gg.STAGED), parsed=True) for x in (a, b))
     diff = sorted(k for k in set(pa) | set(sb) if pa.get(k) != sb.get(k))
     arm("the staged files equal the ones 1401's builder makes from the same kit", not diff, diff)
+    # 3b. this PC's own storage and network controllers are marked built-in, from the I/O registry, as the builder
+    # does from its scan. The registry text is a real desktop with two PCI roots.
+    TREE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "pci-tree-two-roots.txt")
+    PATHS = ["PciRoot(0x0)/Pci(0x1,0x0)/Pci(0x0,0x0)", "PciRoot(0x2)/Pci(0x17,0x0)",
+             "PciRoot(0x2)/Pci(0x1D,0x0)/Pci(0x0,0x0)", "PciRoot(0x2)/Pci(0x1D,0x7)/Pci(0x0,0x0)"]
+    ba, bs = fresh(td, "py-builtin"), fresh(td, "sh-builtin")
+    rep_b = dict(ba.report or {})
+    rep_b["Storage Controllers"] = {"NVMe": {"Bus Type": "NVMe", "PCI Path": PATHS[0]}, "SATA": {"Bus Type": "SATA", "PCI Path": PATHS[1]},
+                                    "Stick": {"Bus Type": "USB", "PCI Path": "PciRoot(0x0)/Pci(0x14,0x0)"}}
+    rep_b["Network"] = {"Wired": {"Bus Type": "PCI", "PCI Path": PATHS[2]}, "Wireless": {"Bus Type": "PCI", "PCI Path": PATHS[3]}}
+    for fxb in (ba, bs):                       # one path already carries a value: it is kept, on both sides
+        cp = os.path.join(fxb.efi, "EFI", "OC", "config.plist")
+        cb = plistlib.load(open(cp, "rb")); cb.setdefault("DeviceProperties", {}).setdefault("Add", {})[PATHS[1]] = {"built-in": b"\x00", "other": "kept"}
+        plistlib.dump(cb, open(cp, "wb"))
+    gg.stage(ba.efi, ba.kit_path, rep_b)
+    rc, out = run("stage", bs.efi, bs.kit_path, "--device-id", "0BDA-8922", "--gpu-id", "0000", "--pci-tree", TREE)
+    ca, cs = (plistlib.load(open(os.path.join(x.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if os.path.exists(os.path.join(x.efi, "EFI", gg.STAGED, "config.plist")) else {} for x in (ba, bs))
+    dp = cs.get("DeviceProperties", {}).get("Add", {})
+    arm("the script marks the disk and network controllers of both PCI roots built-in", rc == 0 and sorted(dp) == PATHS
+        and all(dp[q].get("built-in") == b"\x01" for q in PATHS if q != PATHS[1]), out[-600:] + repr(dp))
+    arm("a value already on a path is kept, with what else is there", dp.get(PATHS[1]) == {"built-in": b"\x00", "other": "kept"}, repr(dp.get(PATHS[1])))
+    arm("and the whole config equals the builder's from the same controllers", rc == 0 and ca == cs and bool(cs),
+        repr((ca.get("DeviceProperties"), cs.get("DeviceProperties"))))
+    arm("control: nothing behind a USB controller is listed", "PciRoot(0x0)/Pci(0x14,0x0)" not in dp)
+
     cfg = sb.get("config.plist", {})
     arm("and match the configuration that booted macOS 27.2",
         bool(cfg) and v3_macos27.diff_reference(cfg, b.ref, b.kit, os.path.join(b.efi, "EFI", gg.STAGED, "Kexts"), b.ref_kexts) == [],

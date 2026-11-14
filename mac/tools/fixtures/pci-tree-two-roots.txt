@@ -1,0 +1,732 @@
++-o Root  <class IORegistryEntry, registered>
+  +-o ACPI  <class IOPlatformExpertDevice, registered>
+    +-o A2XACPIPlatformExpert  <class A2XACPIPlatformExpert, registered>
+    | +-o IOSystemStateNotification  <class IOSystemStateNotification, registered>
+    | +-o IOPMrootDomain  <class IOPMrootDomain, registered>
+    | | +-o IORootParent  <class IORootParent, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | | +-o RootDomainUserClient  <class RootDomainUserClient, registered>
+    | +-o A2XCPUInterruptController  <class A2XCPUInterruptController, registered>
+    | +-o IOPCIMessagedInterruptController  <class IOPCIMessagedInterruptController, registered>
+    | +-o A2XACPIEventController  <class A2XACPIEventController, registered>
+    | +-o PC00@0  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "0"
+    | | +-o A2XACPIPCI  <class A2XACPIPCI, registered>
+    | |   +-o MC__@0  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00000600>
+    | |   +-o RP21@1  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <00040600>
+    | |   | +-o IOPP  <class IOPCI2PCIBridge, registered>
+    | |   |   +-o PXSX@0  <class IOPCIDevice, registered>
+    | |   |     |   "class-code" = <02080100>
+    | |   |     +-o IONVMeController  <class IONVMeController, registered>
+    | |   |       +-o IONVMeBlockStorageDevice@1  <class IONVMeBlockStorageDevice, registered>
+    | |   |             +-o IOGUIDPartitionScheme  <class IOGUIDPartitionScheme, registered>
+    | |   |                 +-o AppleAPFSContainerScheme  <class AppleAPFSContainerScheme, registered>
+    | |   |                   +-o AppleAPFSMedia  <class AppleAPFSMedia, registered>
+    | |   |                     +-o AppleAPFSMediaBSDClient  <class AppleAPFSMediaBSDClient, registered>
+    | |   |                     +-o AppleAPFSContainer  <class AppleAPFSContainer, registered>
+    | |   |                       +-o Mac OS - Data@1  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o Preboot@2  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o Recovery@3  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o Mac OS@4  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o Update@5  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o VM@6  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o macOS 27 - Data@7  <class AppleAPFSVolume, registered>
+    | |   |                       | +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   |                       +-o macOS 27@8  <class AppleAPFSVolume, registered>
+    | |   |                         +-o AppleAPFSVolumeBSDClient  <class AppleAPFSVolumeBSDClient, registered>
+    | |   +-o TCPU@4  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00801100>
+    | |   +-o RP01@6  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <00040600>
+    | |   | +-o IOPP  <class IOPCI2PCIBridge, registered>
+    | |   |   +-o PXSX@0  <class IOPCIDevice, registered>
+    | |   |   | |   "class-code" = <00000300>
+    | |   |   | +-o NVRM  <class NVRM, registered>
+    | |   |   | | +-o NVRMDisplay  <class NVRMDisplay, registered>
+    | |   |   | | | +-o NVRMFramebuffer  <class NVRMNVDAFramebuffer, registered>
+    | |   |   | | |   +-o IOFramebufferUserClient  <class IOFramebufferUserClient, registered>
+    | |   |   | | |   | +-o AppleDisplay  <class AppleDisplay, registered>
+    | |   |   | | |   +-o IOFramebufferSharedUserClient  <class IOFramebufferSharedUserClient, registered>
+    | |   |   | | +-o NVRMDisplay  <class NVRMDisplay, registered>
+    | |   |   | | +-o NVRMDisplay  <class NVRMDisplay, registered>
+    | |   |   | | +-o NVRMDisplay  <class NVRMDisplay, registered>
+    | |   |   | +-o NVAccel  <class NVAccel, registered>
+    | |   |   | | +-o NV2DContext  <class NV2DContext, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | | +-o NVSurface  <class NVSurface, registered>
+    | |   |   | +-o NVRMFBClaim  <class NVRMFBClaim, registered>
+    | |   |   | +-o NVDADeviceControl  <class NVDADeviceControl, registered>
+    | |   |   |   +-o AppleGraphicsDeviceControlClient  <class AppleGraphicsDeviceControlClient, registered>
+    | |   |   +-o pci10de,22eb@0,1  <class IOPCIDevice, registered>
+    | |   |     |   "class-code" = <00030400>
+    | |   |     +-o NMXAudio  <class NMXAudio, registered>
+    | |   |       +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |       | +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |       |   +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |       |   +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |       +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |       | +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |       |   +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |       |   +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |       +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |       | +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |       |   +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |       |   +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |       |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       |   +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |       +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |         +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |           +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |           +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |           | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |           +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |           | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |           +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   +-o GNA0@8  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800800>
+    | |   +-o pci8086,ad0d@A  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00801100>
+    | |   +-o VPU0@B  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00001200>
+    | |   +-o pci8086,ae7f@14  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00000500>
+    | |   +-o LPCB@1F  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00010600>
+    | |   +-o pci8086,ae23@1F,5  <class IOPCIDevice, registered>
+    | |         "class-code" = <00800c00>
+    | +-o SIO1  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "0"
+    | +-o HPET  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "0"
+    | +-o IPIC  <class IOACPIPlatformDevice, registered>
+    | +-o LDRC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "2"
+    | +-o RTC_  <class IOACPIPlatformDevice, registered>
+    | | +-o AppleRTC  <class AppleRTC, registered>
+    | +-o TIMR  <class IOACPIPlatformDevice, registered>
+    | +-o LDR2  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "GigaLPCRS"
+    | +-o EC__  <class IOACPIPlatformDevice, registered>
+    | +-o SBSC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "SOCP2SB"
+    | +-o SBIE  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "IOEP2SB"
+    | +-o PDRC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "1"
+    | +-o PC02@0  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "2"
+    | | +-o A2XACPIPCI  <class A2XACPIPCI, registered>
+    | |   +-o XHCI@14  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <30030c00>
+    | |   | +-o AppleUSBXHCIPCI@14000000  <class AppleUSBXHCIPCI, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14100000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14200000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14300000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14400000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14500000  <class AppleUSB20XHCIPort, registered>
+    | |   |   | +-o USB2.0 Hub@14500000  <class IOUSBHostDevice, registered>
+    | |   |   |   +-o AppleUSB20Hub@14500000  <class AppleUSB20Hub, registered>
+    | |   |   |   | +-o AppleUSB20HubPort@14510000  <class AppleUSB20HubPort, registered>
+    | |   |   |   | +-o AppleUSB20HubPort@14520000  <class AppleUSB20HubPort, registered>
+    | |   |   |   | +-o AppleUSB20HubPort@14530000  <class AppleUSB20HubPort, registered>
+    | |   |   |   | +-o AppleUSB20HubPort@14540000  <class AppleUSB20HubPort, registered>
+    | |   |   |   +-o IOUSBHostInterface@0  <class IOUSBHostInterface, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14600000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14700000  <class AppleUSB20XHCIPort, registered>
+    | |   |   | +-o CyberPower Gaming Mouse@14700000  <class IOUSBHostDevice, registered>
+    | |   |   |   +-o IOUSBHostInterface@0  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o AppleUserUSBHostHIDDevice  <class AppleUserHIDDevice, registered>
+    | |   |   |   |     +-o AppleUserHIDEventDriver  <class AppleUserHIDEventService, registered>
+    | |   |   |   +-o IOUSBHostInterface@1  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o IOUSBHostHIDDevice@14700000,1  <class IOUSBHostHIDDevice, registered>
+    | |   |   |   |     +-o AppleUserHIDEventDriver  <class AppleUserHIDEventService, registered>
+    | |   |   |   +-o AppleUSBHostCompositeDevice  <class AppleUSBHostCompositeDevice, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14800000  <class AppleUSB20XHCIPort, registered>
+    | |   |   | +-o USB Keyboard@14800000  <class IOUSBHostDevice, registered>
+    | |   |   |   +-o IOUSBHostInterface@0  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o IOUSBHostHIDDevice@14800000,0  <class IOUSBHostHIDDevice, registered>
+    | |   |   |   |     +-o AppleUserHIDEventDriver  <class AppleUserHIDEventService, registered>
+    | |   |   |   +-o IOUSBHostInterface@1  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o AppleUserUSBHostHIDDevice  <class AppleUserHIDDevice, registered>
+    | |   |   |   |     +-o AppleUserHIDEventDriver  <class AppleUserHIDEventService, registered>
+    | |   |   |   +-o AppleUSBHostCompositeDevice  <class AppleUSBHostCompositeDevice, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14900000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14a00000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14b00000  <class AppleUSB20XHCIPort, registered>
+    | |   |   | +-o GIGABYTE Device@14b00000  <class IOUSBHostDevice, registered>
+    | |   |   |   +-o IOUSBHostInterface@0  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o AppleUserUSBHostHIDDevice  <class AppleUserHIDDevice, registered>
+    | |   |   |   +-o IOUSBHostInterface@1  <class IOUSBHostInterface, registered>
+    | |   |   |   | +-o IOUSBHostHIDDevice@14b00000,1  <class IOUSBHostHIDDevice, registered>
+    | |   |   |   +-o AppleUSBHostCompositeDevice  <class AppleUSBHostCompositeDevice, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14c00000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14d00000  <class AppleUSB20XHCIPort, registered>
+    | |   |   +-o AppleUSB20XHCIPort@14e00000  <class AppleUSB20XHCIPort, registered>
+    | |   |     +-o Bluetooth USB Host Controller@14e00000  <class IOUSBHostDevice, registered>
+    | |   |       +-o RealtekBluetoothFirmware  <class RealtekBluetoothFirmware, registered>
+    | |   |       +-o Bluetooth Radio@0  <class IOUSBHostInterface, registered>
+    | |   |       +-o Bluetooth Radio@1  <class IOUSBHostInterface, registered>
+    | |   +-o pci8086,7f2f@14,5  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00000000>
+    | |   +-o I2C0@15  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o I2C1@15,1  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o I2C2@15,2  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o I2C3@15,3  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o HECI@16  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800700>
+    | |   +-o SAT0@17  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <01060100>
+    | |   | +-o AppleAHCI  <class AppleAHCI, registered>
+    | |   |   +-o PRT4@4  <class AppleAHCIPort, registered>
+    | |   |   +-o PRT5@5  <class AppleAHCIPort, registered>
+    | |   |   +-o PRT6@6  <class AppleAHCIPort, registered>
+    | |   |   +-o PRT7@7  <class AppleAHCIPort, registered>
+    | |   +-o I2C4@19  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o I2C5@19,1  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o RP15@1D  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <00040600>
+    | |   | +-o IOPP  <class IOPCI2PCIBridge, registered>
+    | |   |   +-o D091@0  <class IOPCIDevice, registered>
+    | |   |     |   "class-code" = <00000200>
+    | |   |     +-o RTL8125  <class RTL8125, registered>
+    | |   |       +-o en0  <class IOEthernetInterface, registered>
+    | |   |         +-o IONetworkStack  <class IONetworkStack, registered>
+    | |   |           +-o IONetworkStackUserClient  <class IONetworkStackUserClient, registered>
+    | |   +-o RP16@1D,7  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <00040600>
+    | |   | +-o IOPP  <class IOPCI2PCIBridge, registered>
+    | |   |   +-o PXSX@0  <class IOPCIDevice, registered>
+    | |   |         "class-code" = <00800200>
+    | |   +-o UA00@1E  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800700>
+    | |   +-o SPI1@1E,3  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00800c00>
+    | |   +-o pci8086,7f06@1F  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00010600>
+    | |   +-o HDAS@1F,3  <class IOPCIDevice, registered>
+    | |   | |   "class-code" = <00030400>
+    | |   | +-o NMXAudio  <class NMXAudio, registered>
+    | |   |   +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |   | +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |   | | +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |   | | +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |   | | | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |   | | +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |   | | | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |   | | +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |   | +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |   |   +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |   |   +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |   |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |   |   +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |   |   | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |   |   +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |   +-o NMXAudioDevice  <class NMXAudioDevice, registered>
+    | |   |     +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |     | +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |     | +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |     | | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |     | +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |     | | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |     | +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   |     +-o NMXAudioEngine  <class NMXAudioEngine, registered>
+    | |   |       +-o IOAudioStream  <class IOAudioStream, registered>
+    | |   |       +-o IOAudioLevelControl  <class IOAudioLevelControl, registered>
+    | |   |       | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       +-o IOAudioToggleControl  <class IOAudioToggleControl, registered>
+    | |   |       | +-o IOAudioControlUserClient  <class IOAudioControlUserClient, registered>
+    | |   |       +-o IOAudioEngineUserClient  <class IOAudioEngineUserClient, registered>
+    | |   +-o SBUS@1F,4  <class IOPCIDevice, registered>
+    | |   |     "class-code" = <00050c00>
+    | |   +-o pci8086,7f24@1F,5  <class IOPCIDevice, registered>
+    | |         "class-code" = <00800c00>
+    | +-o SBPC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "PCHP2SB"
+    | +-o PPMC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "MTPPMC"
+    | +-o SNDW@40000000  <class IOACPIPlatformDevice, registered>
+    | +-o LNKA  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "1"
+    | +-o LNKB  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "2"
+    | +-o LNKC  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "3"
+    | +-o LNKD  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "4"
+    | +-o LNKE  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "5"
+    | +-o LNKF  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "6"
+    | +-o LNKG  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "7"
+    | +-o LNKH  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "8"
+    | +-o PRRE  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "PCHRESV"
+    | +-o IOTR  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "IoTraps"
+    | +-o ICLK  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "SOCCLK"
+    | +-o ECLK  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "IOECLK"
+    | +-o GPI0  <class IOACPIPlatformDevice, registered>
+    | +-o PGPI  <class IOACPIPlatformDevice, registered>
+    | +-o PCLK  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "PCHCLK"
+    | +-o CWDT  <class IOACPIPlatformDevice, registered>
+    | +-o SLPB  <class IOACPIPlatformDevice, registered>
+    | | +-o A2XACPIButton  <class A2XACPIButton, registered>
+    | +-o PR00@0  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "0"
+    | | +-o SMCProcessor  <class SMCProcessor, registered>
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | |   +-o X86PlatformPlugin  <class X86PlatformPlugin, registered>
+    | |     +-o IOPlatformEnabler  <class IOPlatformPluginDevice, registered>
+    | |     +-o AGPMEnabler  <class IOPlatformPluginDevice, registered>
+    | |     +-o X86PlatformShim  <class X86PlatformShim, registered>
+    | +-o PR01@1  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "1"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR02@2  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "2"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR03@3  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "3"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR04@4  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "4"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR05@5  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "5"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR06@6  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "6"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR07@7  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "7"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR08@8  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "8"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR09@9  <class IOACPIPlatformDevice, registered>
+    | | |   "_UID" = "9"
+    | | +-o AppleACPICPU  <class AppleACPICPU, registered>
+    | +-o PR10@a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "10"
+    | +-o PR11@b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "11"
+    | +-o PR12@c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "12"
+    | +-o PR13@d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "13"
+    | +-o PR14@e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "14"
+    | +-o PR15@f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "15"
+    | +-o PR16@10  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "16"
+    | +-o PR17@11  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "17"
+    | +-o PR18@12  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "18"
+    | +-o PR19@13  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "19"
+    | +-o PR20@14  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "20"
+    | +-o PR21@15  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "21"
+    | +-o PR22@16  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "22"
+    | +-o PR23@17  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "23"
+    | +-o PR24@18  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "24"
+    | +-o PR25@19  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "25"
+    | +-o PR26@1a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "26"
+    | +-o PR27@1b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "27"
+    | +-o PR28@1c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "28"
+    | +-o PR29@1d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "29"
+    | +-o PR30@1e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "30"
+    | +-o PR31@1f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "31"
+    | +-o PR32@20  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "32"
+    | +-o PR33@21  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "33"
+    | +-o PR34@22  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "34"
+    | +-o PR35@23  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "35"
+    | +-o PR36@24  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "36"
+    | +-o PR37@25  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "37"
+    | +-o PR38@26  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "38"
+    | +-o PR39@27  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "39"
+    | +-o PR40@28  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "40"
+    | +-o PR41@29  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "41"
+    | +-o PR42@2a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "42"
+    | +-o PR43@2b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "43"
+    | +-o PR44@2c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "44"
+    | +-o PR45@2d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "45"
+    | +-o PR46@2e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "46"
+    | +-o PR47@2f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "47"
+    | +-o WFDE  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "DSarDev"
+    | +-o WFTE  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "TestDev"
+    | +-o PWRB  <class IOACPIPlatformDevice, registered>
+    | | +-o A2XACPIButton  <class A2XACPIButton, registered>
+    | +-o TPM_  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "1"
+    | +-o IETM  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "IETM"
+    | +-o TFN1  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "TFN1"
+    | +-o CHRG  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "CHRG"
+    | +-o PLDT  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "6"
+    | +-o PTID  <class IOACPIPlatformDevice, registered>
+    | +-o PRR2  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "PCHRES2"
+    | +-o C000@0  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "0"
+    | +-o C001@1  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "1"
+    | +-o C002@2  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "2"
+    | +-o C003@3  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "3"
+    | +-o C004@4  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "4"
+    | +-o C005@5  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "5"
+    | +-o C006@6  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "6"
+    | +-o C007@7  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "7"
+    | +-o C008@8  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "8"
+    | +-o C009@9  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "9"
+    | +-o C00A@a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "10"
+    | +-o C00B@b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "11"
+    | +-o C00C@c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "12"
+    | +-o C00D@d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "13"
+    | +-o C00E@e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "14"
+    | +-o C00F@f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "15"
+    | +-o C010@10  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "16"
+    | +-o C011@11  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "17"
+    | +-o C012@12  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "18"
+    | +-o C013@13  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "19"
+    | +-o C014@14  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "20"
+    | +-o C015@15  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "21"
+    | +-o C016@16  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "22"
+    | +-o C017@17  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "23"
+    | +-o C018@18  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "24"
+    | +-o C019@19  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "25"
+    | +-o C01A@1a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "26"
+    | +-o C01B@1b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "27"
+    | +-o C01C@1c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "28"
+    | +-o C01D@1d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "29"
+    | +-o C01E@1e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "30"
+    | +-o C01F@1f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "31"
+    | +-o C020@20  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "32"
+    | +-o C021@21  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "33"
+    | +-o C022@22  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "34"
+    | +-o C023@23  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "35"
+    | +-o C024@24  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "36"
+    | +-o C025@25  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "37"
+    | +-o C026@26  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "38"
+    | +-o C027@27  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "39"
+    | +-o C028@28  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "40"
+    | +-o C029@29  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "41"
+    | +-o C02A@2a  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "42"
+    | +-o C02B@2b  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "43"
+    | +-o C02C@2c  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "44"
+    | +-o C02D@2d  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "45"
+    | +-o C02E@2e  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "46"
+    | +-o C02F@2f  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "47"
+    | +-o FAN0  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "0"
+    | +-o FAN1  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "1"
+    | +-o FAN2  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "2"
+    | +-o FAN3  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "3"
+    | +-o FAN4  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "4"
+    | +-o GSA1  <class IOACPIPlatformDevice, registered>
+    | |     "_UID" = "GSADEV0"
+    | +-o power-button  <class IOACPIPlatformDevice, registered>
+    | | +-o A2XACPIButton  <class A2XACPIButton, registered>
+    | +-o io-apic@fec00000  <class IOACPIPlatformDevice, registered>
+    | | +-o NetArm2x86IOAPIC  <class NetArm2x86IOAPIC, registered>
+    | +-o SMC  <class VirtualSMC, registered>
+    |   +-o AppleSMC  <class AppleSMC, registered>
+    |     +-o SMCWatchDogTimer  <class SMCWatchDogTimer, registered>
+    |     +-o KextAudit  <class KextAudit, registered>
+    |     | +-o KextAuditUserClient  <class KextAuditUserClient, registered>
+    |     +-o AppleSMCClient  <class AppleSMCClient, registered>
+    |     +-o AppleSMCClient  <class AppleSMCClient, registered>
+    |     +-o AppleSMCClient  <class AppleSMCClient, registered>
+    +-o IOResources  <class IOResources, registered>
+    | +-o IOService  <class IOService, registered>
+    | +-o AppleCredentialManager  <class AppleCredentialManager, registered>
+    | +-o AppleDiskImagesController  <class AppleDiskImagesController, registered>
+    | +-o AppleFDEKeyStore  <class AppleFDEKeyStore, registered>
+    | +-o AppleKeyStore  <class AppleKeyStore, registered>
+    | +-o AppleKeyStoreTest  <class AppleKeyStoreTest, registered>
+    | +-o AppleLockdownMode  <class AppleLockdownMode, registered>
+    | +-o CoreAnalyticsHub  <class CoreAnalyticsHub, registered>
+    | | +-o CoreAnalyticsMessenger  <class CoreAnalyticsMessenger, registered>
+    | | +-o CoreAnalyticsUserClient  <class CoreAnalyticsUserClient, registered>
+    | +-o EndpointSecurityDriver  <class EndpointSecurityDriver, registered>
+    | | +-o EndpointSecurityDriverClient  <class EndpointSecurityDriverClient, registered>
+    | | +-o EndpointSecurityExternalClient  <class EndpointSecurityExternalClient, registered>
+    | | +-o EndpointSecurityExternalClient  <class EndpointSecurityExternalClient, registered>
+    | | +-o EndpointSecurityExternalClient  <class EndpointSecurityExternalClient, registered>
+    | +-o IOBluetoothHCIController  <class IOBluetoothHCIController, registered>
+    | | +-o IOBluetoothACPIMethods  <class IOBluetoothACPIMethods, registered>
+    | | +-o IOBluetoothHCIUserClient  <class IOBluetoothHCIUserClient, registered>
+    | | +-o IOBluetoothDevice  <class IOBluetoothDevice, registered>
+    | | +-o IOGDiagnosticGTraceClient  <class IOGDiagnosticGTraceClient, registered>
+    | +-o IOHDIXController  <class IOHDIXController, registered>
+    | +-o IOKitRegistryCompatibility  <class IOKitRegistryCompatibility, registered>
+    | | +-o display  <class IOServiceCompatibility, registered>
+    | | | +-o IOFB  <class IOServiceCompatibility, registered>
+    | | +-o memory  <class IOServiceCompatibility, registered>
+    | +-o IOReportHub  <class IOReportHub, registered>
+    | | +-o IOReportUserClient  <class IOReportUserClient, registered>
+    | | +-o IOReportUserClient  <class IOReportUserClient, registered>
+    | +-o IOTimeSyncRootService  <class IOTimeSyncRootService, registered>
+    | | +-o IOTimeSyncClockManager  <class IOTimeSyncClockManager, registered>
+    | | | +-o IOTimeSyncTranslationMach  <class IOTimeSyncTranslationMach, registered>
+    | | | | +-o IOTimeSyncServiceDaemonClient  <class IOTimeSyncServiceDaemonClient, registered>
+    | | | | +-o IOTimeSyncServiceDaemonClient  <class IOTimeSyncServiceDaemonClient, registered>
+    | | | | +-o IOTimeSyncServiceDaemonClient  <class IOTimeSyncServiceDaemonClient, registered>
+    | | | | +-o IOTimeSyncServiceDaemonClient  <class IOTimeSyncServiceDaemonClient, registered>
+    | | | | +-o IOTimeSyncSyncDaemonClient  <class IOTimeSyncSyncDaemonClient, registered>
+    | | | +-o IOTimeSyncClockManagerDaemonClient  <class IOTimeSyncClockManagerDaemonClient, registered>
+    | | | +-o IOTimeSyncgPTPManager  <class IOTimeSyncgPTPManager, registered>
+    | | | | +-o IOTimeSyncDomain  <class IOTimeSyncDomain, registered>
+    | | | | | +-o IOTimeSyncTimeSyncTimePort  <class IOTimeSyncTimeSyncTimePort, registered>
+    | | | | | +-o IOTimeSyncDomainDaemonClient  <class IOTimeSyncDomainDaemonClient, registered>
+    | | | | +-o IOTimeSyncgPTPManagerDaemonClient  <class IOTimeSyncgPTPManagerDaemonClient, registered>
+    | | | +-o IOTimeSyncClockManagerDaemonClient  <class IOTimeSyncClockManagerDaemonClient, registered>
+    | | +-o IOTimeSyncDaemonService  <class IOTimeSyncDaemonService, registered>
+    | |   +-o IOTimeSyncDaemonUserClient  <class IOTimeSyncDaemonUserClient, registered>
+    | +-o AppleUSBHostResources  <class AppleUSBHostResources, registered>
+    | +-o IOUSBMassStorageResource  <class IOUSBMassStorageResource, registered>
+    | +-o Image4  <class Image4, registered>
+    | +-o IOService  <class IOService, registered>
+    | +-o BlueToolFixup  <class BlueToolFixup, registered>
+    | +-o A2XEFIRuntimeImpl  <class A2XEFIRuntimeImpl, registered>
+    | | +-o options  <class A2XNVRAM, registered>
+    | +-o A2XSMBIOS  <class A2XSMBIOS, registered>
+    | +-o A2XNVRAMLauncher  <class A2XNVRAMLauncher, registered>
+    | +-o com_apple_AppleFSCompression_AppleFSCompressionTypeDataless  <class com_apple_AppleFSCompression_AppleFSCompressionTypeDataless, registered>
+    | +-o com_apple_AppleFSCompression_AppleFSCompressionTypeZlib  <class com_apple_AppleFSCompression_AppleFSCompressionTypeZlib, registered>
+    | +-o AppleImage4  <class AppleImage4, registered>
+    | +-o AppleMobileFileIntegrity  <class AppleMobileFileIntegrity, registered>
+    | +-o AppleGCResource  <class AppleGCResource, registered>
+    | +-o AppleSystemPolicy  <class AppleSystemPolicy, registered>
+    | +-o com_apple_BootCache  <class com_apple_BootCache, registered>
+    | +-o com_apple_filesystems_hfs  <class com_apple_filesystems_hfs, registered>
+    | +-o IONetworkStack  <class IONetworkStack, registered>
+    | | +-o IONetworkStackUserClient  <class IONetworkStackUserClient, registered>
+    | +-o AppleUSBHostPacketFilter  <class AppleUSBHostPacketFilter, registered>
+    | +-o com_apple_filesystems_apfs  <class com_apple_filesystems_apfs, registered>
+    | +-o com_apple_filesystems_lifs  <class com_apple_filesystems_lifs, registered>
+    | +-o Lilu  <class Lilu, registered>
+    | +-o AppleIntelSlowAdaptiveClockingManager  <class AppleIntelSlowAdaptiveClockingManager, registered>
+    | +-o AppleGPUWrangler  <class AppleGPUWrangler, registered>
+    | | +-o AppleGraphicsDeviceControlPlugin  <class AppleGraphicsDeviceControlPlugin, registered>
+    | | | +-o AGDCPluginDisplayMetrics  <class AGDCPluginDisplayMetrics, registered>
+    | | +-o AppleGPUWranglerClient  <class AppleGPUWranglerClient, registered>
+    | | +-o AppleGPUWranglerClient  <class AppleGPUWranglerClient, registered>
+    | | +-o AppleGPUWranglerClient  <class AppleGPUWranglerClient, registered>
+    | | +-o AppleGPUWranglerClient  <class AppleGPUWranglerClient, registered>
+    | +-o AppleHWAccess  <class AppleHWAccess, registered>
+    | +-o AppleIPAppender  <class AppleIPAppender, registered>
+    | +-o AppleRSMChannelController  <class AppleRSMChannelController, registered>
+    | +-o IOKitCrashQuiz1  <class IOKitCrashQuiz1, registered>
+    | +-o AppleUSBUserHCIResources  <class AppleUSBUserHCIResources, registered>
+    | +-o IOUserEthernetResource  <class IOUserEthernetResource, registered>
+    | +-o TrustedClockingKEXT  <class TrustedClockingKEXT, registered>
+    | +-o com_apple_filesystems_nfs  <class com_apple_filesystems_nfs, registered>
+    | +-o NVDAGDCLoader  <class NVDAGDCLoader, registered>
+    | +-o AppleSCSISubsystemGlobals  <class AppleSCSISubsystemGlobals, registered>
+    | +-o IOAVBNub  <class IOAVBNub, registered>
+    | +-o IOAVBValidate  <class IOAVBValidate, registered>
+    +-o IOUserResources  <class IOUserResources, registered>
+    +-o IOUserServer(com.apple.driverkit.AppleUserHIDDrivers-0x100000489)  <class IOUserServer, registered>
