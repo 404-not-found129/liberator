@@ -3,7 +3,7 @@
 
     python3 tools/v3_kit.py make <config.plist> <Kexts dir> <out kit dir>
     python3 tools/v3_kit.py diff <built EFI dir> <config.plist> <Kexts dir> <kit dir>
-    python3 tools/v3_kit.py package <kit dir> system|driver|laydown <package folder> <installer file name>
+    python3 tools/v3_kit.py package <kit dir> system|driver|driver_test|laydown <package folder> <installer file name>
 
 make copies the kexts SPEC names out of that EFI and writes v3-kit.json with the MinKernel, MaxKernel and executable
 each one booted with, the boot-args SPEC allows, and the values SPEC copies. Only what SPEC names goes into the kit:
@@ -197,12 +197,32 @@ def make(config, kexts, out):
     return kit
 
 
+# The built-in AMD/Intel graphics path ("test"). Golden Gate stages a PC by the graphics it starts on: an NVIDIA card the
+# driver takes stages "nvidia", built-in AMD or Intel graphics with no such card stages "test" and runs the driver_test
+# package instead of the driver one. On "test" the NVIDIA kernel driver and its boot arguments are left out (only.nvidia)
+# and the AMD/Intel driver is asked to take the screen (level 3: on a PC whose only GPU lights the console, the lower
+# levels leave the GPU to the firmware); on "nvidia" those two arguments are left out (only.test).
+TEST_BOOT_ARGS = ["nmxintel=3", "nmxamd=3"]
+NVIDIA_ONLY = ["NVRM.kext", "gfxrst=4", "nvrmholdcap=180"]
+
+
+def _graphics_test(manifest):
+    paths = [p for p in (manifest.get("graphics") or ["nvidia"]) if p != "test"]
+    manifest["graphics"] = paths + ["test"]
+    manifest["boot_args"] = list(manifest.get("boot_args") or []) + [a for a in TEST_BOOT_ARGS
+                                                                     if a not in (manifest.get("boot_args") or [])]
+    manifest["only"] = dict(manifest.get("only") or {})
+    manifest["only"]["test"] = list(TEST_BOOT_ARGS)
+    have = {k["name"] for k in manifest.get("kexts") or []} | set(manifest.get("boot_args") or [])
+    manifest["only"]["nvidia"] = sorted(set(manifest["only"].get("nvidia") or []) | {n for n in NVIDIA_ONLY if n in have})
+
+
 def package(kit_path, key, folder, installer):
     """Copies folder into the kit as <key> and names it in the manifest. Refuses, leaving the kit as it was, unless the
     kit loads, the installer is a file directly in the folder, and the kit does not already carry that package."""
     from p1401 import golden_gate  # noqa: PLC0415
-    if key not in ("system", "driver", "laydown"):
-        sys.exit(f"the package is system, driver or laydown, not {key!r}")
+    if key not in ("system", "driver", "driver_test", "laydown"):
+        sys.exit(f"the package is system, driver, driver_test or laydown, not {key!r}")
     kit = v3_macos27.load_kit(kit_path)
     if os.sep in installer or installer.startswith(".") or not os.path.isfile(os.path.join(folder, installer)):
         sys.exit(f"{installer!r} is not a file directly in {folder}")
@@ -217,6 +237,8 @@ def package(kit_path, key, folder, installer):
     with open(mpath) as fh:
         manifest = json.load(fh)
     manifest[key] = {"dir": key, "installer": installer}
+    if key == "driver_test":
+        _graphics_test(manifest)
     tmp = mpath + ".tmp"
     with open(tmp, "w") as fh:
         json.dump(manifest, fh, indent=1, sort_keys=True)

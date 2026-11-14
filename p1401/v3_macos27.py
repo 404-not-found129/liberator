@@ -94,7 +94,8 @@ def identity_for(report):
 # repository; these lists are what keeps it from rewriting the rest of the boot configuration.
 SETTABLE = ("Misc/Security/SecureBootModel", "PlatformInfo/Generic/SystemProductName")
 BOOT_ARGS_ALLOWED = ("-v", "-lilubetaall", "-vsmcbeta", "-no_compat_check",
-                     "a2x_conlive=1", "a2xbusydump=2", "pci_log=0x201", "pci_log_mode=0x2", "gfxrst=4", "nvrmholdcap=180")
+                     "a2x_conlive=1", "a2xbusydump=2", "pci_log=0x201", "pci_log_mode=0x2", "gfxrst=4", "nvrmholdcap=180",
+                     "nmxintel=3", "nmxamd=3", "nmxfb_pipe=1")
 
 _KERNEL = re.compile(r"\d{1,2}\.\d{1,2}\.\d{1,2}\Z")
 _KEXT = re.compile(r"[A-Za-z0-9_.+-]{1,96}\.kext\Z")
@@ -386,10 +387,13 @@ def apply(efi_dir, kit, notices, report=None, kit_model=False):
         args = [a for a in args if a not in removed]
         changes.append({"v3": "boot-args-diagnostic-removed", "removed": removed})
     # name=value: a value the PC's own config gives that name is replaced, so the name is there once
-    for a in kit["boot_args"]:
+    # builds made here are NVIDIA builds: the built-in graphics path's arguments (only.test) are Golden Gate's to add
+    test_only = set(((kit.get("only") or {}).get("test")) or [])
+    wanted = [a for a in kit["boot_args"] if a not in test_only]
+    for a in wanted:
         if "=" in a:
             args = [t for t in args if t == a or not t.startswith(a.split("=")[0] + "=")]
-    added = [a for a in kit["boot_args"] if a not in args]
+    added = [a for a in wanted if a not in args]
     nv["boot-args"] = " ".join(args + added)
     if added:
         changes.append({"v3": "boot-args", "added": added})

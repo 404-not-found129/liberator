@@ -78,7 +78,7 @@ ESP_MARGIN_KB=8192    # kept free on the startup partition after the staged copy
 NV=7C436110-AB2A-4BBB-A880-FE41995C9F82
 # All a kit's manifest may set in config.plist, and all it may add to boot-args (p1401/v3_macos27.py has the same lists).
 SET_ALLOWED="Misc/Security/SecureBootModel PlatformInfo/Generic/SystemProductName"
-BOOT_ARGS_ALLOWED="-v -lilubetaall -vsmcbeta -no_compat_check a2x_conlive=1 a2xbusydump=2 pci_log=0x201 pci_log_mode=0x2 gfxrst=4 nvrmholdcap=180"
+BOOT_ARGS_ALLOWED="-v -lilubetaall -vsmcbeta -no_compat_check a2x_conlive=1 a2xbusydump=2 pci_log=0x201 pci_log_mode=0x2 gfxrst=4 nvrmholdcap=180 nmxintel=3 nmxamd=3 nmxfb_pipe=1"
 # The model each NVIDIA generation presents as on macOS 27 (p1401/v3_macos27.py IDENTITY); generations without a
 # model keep what the kit sets.
 MODEL_RTX50=Mac17,15
@@ -617,6 +617,9 @@ in_kit_list() {  # $1 = manifest key of a list of strings, $2 = the string
 # arguments on a machine that starts on other graphics, and what only a PC needs (its SMC stand-in's argument) on a Mac.
 not_for_this() {
   case "$GFX" in apple|test) in_kit_list only.nvidia "$1" && return 0;; esac
+  # the AMD/Intel driver's take-the-screen arguments belong to the built-in graphics path only: on an NVIDIA PC (or a
+  # Mac on Apple's drivers) they would hand a working iGPU's outputs to a test driver
+  [ "$GFX" = test ] || { in_kit_list only.test "$1" && return 0; }
   [ "$EFIKIND" = mac ] && in_kit_list only.pc "$1" && return 0
   return 1
 }
