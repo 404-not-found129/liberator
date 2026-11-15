@@ -717,7 +717,7 @@ not_for_this() {
 # kernel, and it never reached its first service. So a limit that reaches 27 is treated like no limit at all.
 reaches_27() { case "${1%%.*}" in '') return 0;; *[!0-9]*) return 1;; esac; [ "${1%%.*}" -ge 27 ]; }
 NOT27=""; NOTABLES=0     # what apply_kit reports: kexts kept off macOS 27, and identity tables it could not write
-PATCH_ON=0; PATCH_OWN=0; PATCH_OFF=0; PATCH_OFF_NAMES=""   # kernel patches: carried to 27, replaced by the kit's own, left at 26
+PATCH_ON=0; PATCH_OWN=0; PATCH_OFF=0; PATCH_OFF_NAMES=""; PATCH_AMD=0   # kernel patches: carried to 27, replaced by the kit's own, left at 26
 kit_brings() { local n j; n=$(kv kexts) || return 1; j=0; while [ "$j" -lt "$n" ]; do [ "$(kv kexts.$j.name)" = "$1" ] && return 0; j=$((j + 1)); done; return 1; }
 choice_of() { [ -f "$EFI/$CHOICES" ] && [ ! -L "$EFI/$CHOICES" ] && awk -F'\t' -v k="$1" '$2 == k { v = $1 } END { print v }' "$EFI/$CHOICES"; }
 # What the user chose for single drivers on this partition, applied to the config at $AC. It comes after every rule
@@ -820,9 +820,10 @@ apply_kit() {    # $1 = the OC folder to change
   # maker found its bytes in this macOS 27 kernel, in the same functions as in macOS 26. Where the kit holds its own
   # patch(es) for one that cannot be carried, each of them is added for macOS 27 (one user patch can stand for several
   # places, each with its own entry). Any other patch keeps its limit and is named.
+  local added=" " nown j
   n=$(cget Kernel.Patch); case "$n" in ''|*[!0-9]*) n=0;; esac
   if [ "$n" -gt 0 ] && khas patches_27; then
-    local marks=" " owns=" " mk mx mn nown pcount o hit key val
+    local marks=" " owns=" " mk mx mn pcount o hit key val
     m=$(kv patches_27); case "$m" in ''|*[!0-9]*) m=0;; esac
     j=0; while [ "$j" -lt "$m" ]; do marks="$marks$(kv patches_27.$j) "; j=$((j + 1)); done
     nown=$(kv patches_27_own) || nown=0; case "$nown" in ''|*[!0-9]*) nown=0;; esac
@@ -841,7 +842,9 @@ apply_kit() {    # $1 = the OC folder to change
         *) case "$owns" in *" $mk:"*)
             hit=0
             for o in $owns; do
-              if [ "${o%%:*}" = "$mk" ]; then add_own_patch "${o#*:}" || return 1; hit=1; fi
+              if [ "${o%%:*}" = "$mk" ]; then
+                case "$added" in *" ${o#*:} "*) ;; *) add_own_patch "${o#*:}" || return 1; added="$added${o#*:} ";; esac
+                hit=1; fi
             done
             [ $hit = 1 ] || { bad "could not find the kit's own patches for kernel patch $i"; return 1; }
             PATCH_OWN=$((PATCH_OWN + 1));;
@@ -851,6 +854,18 @@ apply_kit() {    # $1 = the OC folder to change
       fi
       i=$((i + 1)); done
   fi
+  # An AMD processor gets the kit's own macOS 27 patches even when this PC's config has no patch they stand in for
+  # (a trimmed list): without them a core whose time-stamp counter runs behind another's stops macOS 27 with
+  # "Non-monotonic time". AMD processors have no IA32_TSC_ADJUST, so no kext can line the counters up. Each own
+  # patch is added once.
+  [ -n "$CPUV" ] || CPUV=$(sysctl -n machdep.cpu.vendor 2>/dev/null)
+  case "$CPUV" in *AMD*)
+    if khas patches_27_own; then
+      nown=$(kv patches_27_own) || nown=0; case "$nown" in ''|*[!0-9]*) nown=0;; esac
+      j=0; while [ "$j" -lt "$nown" ]; do
+        case "$added" in *" $j "*) ;; *) add_own_patch "$j" || return 1; added="$added$j "; PATCH_AMD=$((PATCH_AMD + 1));; esac
+        j=$((j + 1)); done
+    fi;; esac
 
   # system kexts the injected NVIDIA driver links against: in the boot collection on macOS 27
   m=$(kv force); [ -n "$m" ] || m=0; j=0
@@ -1206,6 +1221,7 @@ stage)
   [ -z "$OFF27" ] || note "off on macOS 27 by your choice:$OFF27"
   [ -z "$ON27" ] || note "on for macOS 27 by your choice:$ON27"
   [ $((PATCH_ON + PATCH_OWN)) = 0 ] || note "kernel patches for macOS 27: $PATCH_ON carried as they are (checked against this macOS 27 kernel)$([ $PATCH_OWN = 0 ] || echo ", $PATCH_OWN replaced by the kit's own")"
+  [ "$PATCH_AMD" = 0 ] || note "kernel patches for macOS 27: $PATCH_AMD of the kit's own added for this AMD processor (the non-monotonic time checks)"
   [ $PATCH_OFF = 0 ] || note "$PATCH_OFF kernel patch(es) of this PC were not checked against macOS 27 and stay off there: $PATCH_OFF_NAMES"
   [ $NOTABLES = 0 ] || [ "$EFIKIND" = mac ] || note "this PC's config has no serial number and UUID of its own, so the Mac identity tables were not written"
   note "driver package: $DNOTE"
@@ -1407,6 +1423,7 @@ refresh)
   rm -rf "$EFI/$RENEWED" "$SCR"
   ok "the macOS 27 startup files are now this kit's; macOS 26's are still kept at EFI/$KEPT. Restart to use them"
   [ $((PATCH_ON + PATCH_OWN)) = 0 ] || note "kernel patches for macOS 27: $PATCH_ON carried as they are$([ $PATCH_OWN = 0 ] || echo ", $PATCH_OWN replaced by the kit's own")"
+  [ "$PATCH_AMD" = 0 ] || note "kernel patches for macOS 27: $PATCH_AMD of the kit's own added for this AMD processor (the non-monotonic time checks)"
   echo "RESULT ok"; exit 0;;
 
 drivers)

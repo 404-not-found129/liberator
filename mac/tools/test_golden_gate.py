@@ -464,6 +464,24 @@ with tempfile.TemporaryDirectory() as td:
     rc, out = run("stage", amd2.efi, oldkit, *AMDARGS)
     sp2 = plistlib.load(open(os.path.join(amd2.efi, "EFI", gg.STAGED, "config.plist"), "rb"))["Kernel"]["Patch"] if rc == 0 else [{}]
     arm("control: a kit that names no patches carries none", rc == 0 and sp2[0].get("MaxKernel") == "25.99.99" and "kernel patch" not in out, out)
+    # an AMD processor gets the kit's own time patches even when its config has no patch they stand in for
+    trim = fresh(td, "amd-pc-trimmed")
+    tcp = os.path.join(trim.efi, "EFI", "OC", "config.plist")
+    tc = plistlib.load(open(tcp, "rb")); tc["Kernel"]["Patch"] = [known]; plistlib.dump(tc, open(tcp, "wb"))
+    rc, out = run("stage", trim.efi, akit, *AMDARGS)
+    tp = plistlib.load(open(os.path.join(trim.efi, "EFI", gg.STAGED, "config.plist"), "rb"))["Kernel"]["Patch"] if rc == 0 else []
+    tn = [q["Comment"] for q in tp]
+    arm("an AMD PC whose config lacks the time patch still gets each of the kit's own patches, once, for macOS 27 only",
+        rc == 0 and tn.count("NullMoth | exact | macOS 27") == 1 and tn.count("NullMoth | exact - second place | macOS 27") == 1
+        and all(q["MinKernel"] == "27.0.0" for q in tp if q["Comment"].startswith("NullMoth")) and len(tp) == 3
+        and "2 of the kit's own added for this AMD processor" in out, out + repr(tn))
+    intel = fresh(td, "intel-pc-trimmed")
+    icp = os.path.join(intel.efi, "EFI", "OC", "config.plist")
+    ic = plistlib.load(open(icp, "rb")); ic["Kernel"]["Patch"] = [known]; plistlib.dump(ic, open(icp, "wb"))
+    rc, out = run("stage", intel.efi, akit, *[("GenuineIntel" if x == "AuthenticAMD" else x) for x in AMDARGS])
+    ip = plistlib.load(open(os.path.join(intel.efi, "EFI", gg.STAGED, "config.plist"), "rb"))["Kernel"]["Patch"] if rc == 0 else [{"Comment": "NullMoth stage failed"}]
+    arm("control: an Intel PC with the same config gets none of them", rc == 0 and not any(q["Comment"].startswith("NullMoth") for q in ip)
+        and "for this AMD processor" not in out, out + repr([q["Comment"] for q in ip]))
     badkit = mac_kit("kit-amd-bad", patches_27=[], patches_27_own=[dict(own27, patch=dict(own27["patch"], comment='x","Enabled":false,"y":"'))])
     amd3 = fresh(td, "amd-pc-bad-kit")
     c3 = plistlib.load(open(os.path.join(amd3.efi, "EFI", "OC", "config.plist"), "rb"))
