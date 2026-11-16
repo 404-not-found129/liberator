@@ -7,7 +7,6 @@ machine; no Apple or NVIDIA file is part of it.
 | folder | what it is |
 |---|---|
 | `mac/` | the macOS app, its setup scripts (`Resources/nullmoth-setup.sh`, `Resources/nullmoth-golden-gate.sh`) and tests |
-| `windows/`, `p1401/`, `loader/`, `native/` | the Windows builder of PC startup files and its rules |
 | `kit/` | the macOS 27 kit's installers: lay-down and kernel-collection scripts, the driver, built-in-graphics and Mac Pro packages, the system package and its start-up helpers. `kit/v3-kit.json` is the kit's manifest |
 | `source/interp` | the interpreter that runs macOS 27's Apple-silicon programs on Intel |
 | `source/translator` | the ahead-of-time translator the interpreter's tables are built from |
