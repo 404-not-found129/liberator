@@ -15,7 +15,7 @@
 - Spotlight's two indexing services both load their content readers.
 - Icons and other layered drawings that read what they draw over now draw correctly (Safari's compass, Maps); icons saved before the fix are cleared when the driver is updated.
 - Widgets set up through Shortcuts (Weather, Photos and others) show their content: the macOS 27 Sandbox policy for Intel now closes a program's own data vault once it has sandboxed itself, which Shortcuts checks before it starts.
-- Real Macs: the Mac Pro (Late 2013) with its AMD FirePro graphics (Tahoe's own AMD drivers, taken from the Mac), its HD Audio with the internal speakers as the default output, USB 3 and Thunderbolt, and a wired network address at start. One platform driver serves PCs and Macs; Liberator reads the machine and sets it up for it.
+- Real Macs: every Intel Mac from 2013 on that runs macOS Tahoe. Liberator carries every driver the Mac's own Tahoe uses that macOS 27 lacks (graphics, Wi-Fi, Bluetooth, audio, USB, Thunderbolt) over to macOS 27 and links it there, naming any that cannot link. Brought up on a Mac Pro (Late 2013): FirePro graphics, internal speakers, USB 3, Thunderbolt and a wired address at start. One platform driver serves PCs and Macs; Liberator reads the machine and sets it up for it.
 - The source of everything Liberator installs on macOS 27 is in this repository: the interpreter, the translator, the Sandbox policy, the kit's installers and the real-Mac drivers (SOURCE.md).
 
 ## Liberator Beta 2

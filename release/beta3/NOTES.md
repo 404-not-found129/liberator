@@ -13,7 +13,7 @@ Liberator moves an OpenCore PC that runs macOS 15 or macOS 26 to macOS 27.2 with
 - Start reports, if you agree. Liberator asks once. With a yes, macOS 27 sends NullMoth one short summary of the PC and of its first start that reached the desktop, and sends the start-up logs of a start that did not. With a no, nothing is sent. The summary holds hardware models and driver state, no names, files or serial numbers.
 - Widgets that are set up through Shortcuts (Weather, Photos and others) now show their content instead of staying empty.
 - Icons drawn before the driver fix (Safari, Maps, FaceTime in the Dock) are redrawn after the update.
-- Real Macs: the Mac Pro (Late 2013) with its AMD FirePro graphics, audio through its internal speakers, USB 3 and Thunderbolt. Liberator sees which machine it runs on and sets it up for that machine. The AMD drivers are taken from the Mac's own macOS Tahoe, so start Tahoe with its graphics working first. Untried outside our own Mac Pro: please send a report.
+- Real Macs: every Intel Mac from 2013 on that runs macOS Tahoe. Liberator reads the Mac's own Tahoe and carries every driver it uses that macOS 27 lacks (graphics, Wi-Fi, Bluetooth, audio, USB, Thunderbolt) over to macOS 27, so start Tahoe with everything working first. Brought up on a Mac Pro (Late 2013); other Macs are untried, please send a report.
 - The source of everything Liberator installs on macOS 27 is now in the Liberator repository: the interpreter, the translator, the Sandbox policy, the kit's installers and the real-Mac drivers.
 - For testing: a package for PCs that have only AMD or Intel built-in graphics. It is untried on real hardware. Please send a report either way.
 
