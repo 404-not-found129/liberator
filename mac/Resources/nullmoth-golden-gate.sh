@@ -346,6 +346,8 @@ apple_graphics_ids() {  # VVVV:DDDD of every AMD and Intel chip a graphics drive
 }
 kit_carries() {  # $1 = nvidia, apple or test: does this kit carry macOS 27 graphics for that path
   local n i; n=$(kv graphics) || n=""
+  # the kit's package for Apple's own drivers serves real Macs (the whole Mac, from its own Tahoe); a PC has none yet
+  [ "$1" = apple ] && [ -n "${EFIKIND:-}" ] && [ "$EFIKIND" != mac ] && return 1
   case "$n" in ''|*[!0-9]*) [ "$1" = nvidia ]; return;; esac   # a kit that names none is an NVIDIA kit
   i=0; while [ "$i" -lt "$n" ]; do [ "$(kv graphics.$i)" = "$1" ] && return 0; i=$((i + 1)); done; return 1
 }
@@ -1635,14 +1637,14 @@ finish)
   /bin/bash "$SPAY/$sinst" --payload "$SPAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --dry-run || stop "the v3 system installer refused its dry run. Nothing was changed"
   step "Checking the macOS 27 driver install (dry run)"
   tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. Nothing was changed"
-  /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --dry-run || stop "the v3 driver installer refused its dry run. Nothing was changed"
+  GG_EFIKIND=$(is_mac_efi && echo mac || echo pc) /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --dry-run || stop "the v3 driver installer refused its dry run. Nothing was changed"
   step "Installing the macOS 27 system package"
   tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. Nothing was changed"
   /bin/bash "$SPAY/$sinst" --payload "$SPAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the v3 system installer stopped; see its lines above. The driver was not installed"
   report_choice "$DATA"
   step "Installing the macOS 27 driver"
   tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. The system package is installed; the driver is not"
-  /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the v3 driver installer stopped; see its lines above"
+  GG_EFIKIND=$(is_mac_efi && echo mac || echo pc) /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the v3 driver installer stopped; see its lines above"
   # Which kit set it up is left on the new system, for the log collector there: the kit's name and its manifest's checksum.
   KR=$(mktemp -t 1401-kit-record) || KR=""
   if [ -n "$KR" ]; then
