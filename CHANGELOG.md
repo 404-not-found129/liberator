@@ -9,6 +9,14 @@
 - A PC prepared from the Mac app has its disk and network controllers marked built in (Beta 2 did this only for PCs built from Windows).
 - Optional start reports: with your agreement, macOS 27 tells NullMoth once how its first start went, and reports a start that did not reach the desktop.
 - The kit carries a test package for PCs with only AMD or Intel built-in graphics. It is untried on real hardware.
+- AMD processors: the kit's macOS 27 time patches are applied even when the PC's config lacks the one they stand in for (Beta 2 kits carried none, so AMD PCs stopped before macOS 27 started).
+- Photos, Music and TV open and stay open on macOS 27; seven more Apple programs that return small structures run correctly through the interpreter.
+- A new account's home folder is made from Apple's own template, so Photos no longer asks for a library at every start.
+- Spotlight's two indexing services both load their content readers.
+- Icons and other layered drawings that read what they draw over now draw correctly (Safari's compass, Maps); icons saved before the fix are cleared when the driver is updated.
+- Widgets set up through Shortcuts (Weather, Photos and others) show their content: the macOS 27 Sandbox policy for Intel now closes a program's own data vault once it has sandboxed itself, which Shortcuts checks before it starts.
+- Real Macs: the Mac Pro (Late 2013) with its AMD FirePro graphics (Tahoe's own AMD drivers, taken from the Mac), its HD Audio with the internal speakers as the default output, USB 3 and Thunderbolt, and a wired network address at start. One platform driver serves PCs and Macs; Liberator reads the machine and sets it up for it.
+- The source of everything Liberator installs on macOS 27 is in this repository: the interpreter, the translator, the Sandbox policy, the kit's installers and the real-Mac drivers (SOURCE.md).
 
 ## Liberator Beta 2
 - Version 0.2.0, built for its own kit (release tag v3.0.0-beta.2).
