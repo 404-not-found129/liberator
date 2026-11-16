@@ -1,0 +1,21 @@
+/* a64_all.c — the interpreter core as one translation unit. The decode groups, the helpers they call on every
+   instruction (a64_awc, a64_shift, a64_cond, ldwrite) and the dispatch loop were separate objects, so none of
+   those calls could be inlined; as one unit the compiler sees across them. No code moves and no symbol changes. */
+#include "a64i.c"
+#include "a64_util.c"
+#include "a64_dpimm.c"
+#include "a64_dpreg.c"
+#include "a64_brsys.c"
+#include "a64_ldst.c"
+#include "a64_ldstruct.c"
+#include "a64_fp.c"
+#include "a64_fpsc.c"
+#include "a64_simd.c"
+#include "a64_simd3.c"
+#include "a64_simdsh.c"
+#include "a64_simdfp.c"
+#include "a64_simdidx.c"
+#include "a64_est.c"
+#include "a64_crypto.c"
+#include "a64_cache.c"
+#include "a64_rt.c"

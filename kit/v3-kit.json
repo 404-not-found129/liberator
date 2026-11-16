@@ -1,0 +1,375 @@
+{
+ "block_caps": [
+  {
+   "identifier": "com.apple.iokit.IOSkywalkFamily",
+   "max_kernel": "26.99.99"
+  }
+ ],
+ "boot_args": [
+  "-v",
+  "-lilubetaall",
+  "-vsmcbeta",
+  "-no_compat_check",
+  "a2x_conlive=1",
+  "a2xbusydump=2",
+  "pci_log=0x201",
+  "pci_log_mode=0x2",
+  "gfxrst=4",
+  "nvrmholdcap=180",
+  "nmxintel=3",
+  "nmxamd=3",
+  "a2x_pcibus=0x10010fe",
+  "a2x_nondrv=1"
+ ],
+ "caps": [
+  {
+   "max_kernel": "26.99.99",
+   "name": "AMFIPass.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "AppleALC.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "NVMeFix.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "RestrictEvents.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "WhateverGreen.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "IOSkywalkFamily.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "IO80211FamilyLegacy.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "RTW89Bridge.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "RTW89Legacy.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "RTW89Wifi.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "IntelBTPatcher.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "SMCSuperIO.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "AirportItlwm.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "itlwm.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "AirportBrcmFixup.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "IntelBluetoothFirmware.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "IntelBluetoothInjector.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "BrcmPatchRAM3.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "BrcmFirmwareData.kext"
+  },
+  {
+   "max_kernel": "26.99.99",
+   "name": "BrcmBluetoothInjector.kext"
+  }
+ ],
+ "csr_active_config": "ff0f0000",
+ "darwin": "27",
+ "driver": {
+  "dir": "driver",
+  "installer": "install-driver.sh"
+ },
+ "driver_apple": {
+  "dir": "driver_apple",
+  "installer": "install-apple.sh"
+ },
+ "driver_test": {
+  "dir": "driver_test",
+  "installer": "install-igpu.sh"
+ },
+ "force": [
+  {
+   "bundle_path": "System/Library/Extensions/IOSurface.kext",
+   "executable": "Contents/MacOS/IOSurface",
+   "identifier": "com.apple.iokit.IOSurface",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "plist_path": "Contents/Info.plist"
+  },
+  {
+   "bundle_path": "System/Library/Extensions/IOGraphicsFamily.kext",
+   "executable": "Contents/MacOS/IOGraphicsFamily",
+   "identifier": "com.apple.iokit.IOGraphicsFamily",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "plist_path": "Contents/Info.plist"
+  },
+  {
+   "bundle_path": "System/Library/Extensions/IOAcceleratorFamily2.kext",
+   "executable": "Contents/MacOS/IOAcceleratorFamily2",
+   "identifier": "com.apple.iokit.IOAcceleratorFamily2",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "plist_path": "Contents/Info.plist"
+  },
+  {
+   "bundle_path": "System/Library/Extensions/AppleGraphicsControl.kext/Contents/PlugIns/AppleGraphicsDeviceControl.kext",
+   "executable": "Contents/MacOS/AppleGraphicsDeviceControl",
+   "identifier": "com.apple.AppleGraphicsDeviceControl",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "plist_path": "Contents/Info.plist"
+  },
+  {
+   "bundle_path": "System/Library/Extensions/IOAudioFamily.kext",
+   "executable": "Contents/MacOS/IOAudioFamily",
+   "identifier": "com.apple.iokit.IOAudioFamily",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "plist_path": "Contents/Info.plist"
+  }
+ ],
+ "gpu_ids": [
+  "2D05"
+ ],
+ "graphics": [
+  "nvidia",
+  "test",
+  "apple"
+ ],
+ "kexts": [
+  {
+   "executable": "Contents/MacOS/a2x_exec_hook",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "a2x_exec_hook.kext",
+   "position": "first",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/Lilu",
+   "max_kernel": "",
+   "min_kernel": "",
+   "name": "Lilu.kext",
+   "position": "first",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/NVRM",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "NVRM.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/A2XACPIPlatform",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "A2XACPIPlatform.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/NetArm2x86IOAPIC",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "NetArm2x86IOAPIC.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/AppleRTC",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "AppleRTC.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/a2x_efiruntime",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "efiruntime.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/a2x_efinvram",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "efinvram.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/a2x_smbios",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "smbios.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "",
+   "max_kernel": "",
+   "min_kernel": "27.0.0",
+   "name": "NativeUSBHIDRoute.kext",
+   "position": "end",
+   "when": "always"
+  },
+  {
+   "executable": "Contents/MacOS/BlueToolFixup",
+   "max_kernel": "",
+   "min_kernel": "21.0.0",
+   "name": "BlueToolFixup.kext",
+   "needs_lilu": true,
+   "position": "after-lilu",
+   "when": "present"
+  },
+  {
+   "executable": "Contents/MacOS/RealtekBluetoothFirmware",
+   "ids": [
+    "0BDA-"
+   ],
+   "max_kernel": "",
+   "min_kernel": "",
+   "name": "RealtekBluetoothFirmware.kext",
+   "needs_lilu": true,
+   "position": "end",
+   "section": "Bluetooth",
+   "when": "ids"
+  }
+ ],
+ "kit": "nullmoth-v3-macos27",
+ "known_27": [
+  "Lilu.kext",
+  "VirtualSMC.kext",
+  "SMCProcessor.kext",
+  "AppleMCEReporterDisabler.kext",
+  "USBToolBox.kext",
+  "RTL812xLucy.kext",
+  "LucyRTL8125Ethernet.kext",
+  "IntelMausi.kext",
+  "AppleIGC.kext",
+  "AppleIGB.kext",
+  "IntelLucy.kext",
+  "RealtekRTL8111.kext",
+  "AtherosE2200Ethernet.kext"
+ ],
+ "laydown": {
+  "dir": "laydown",
+  "installer": "lay-down-27.sh"
+ },
+ "only": {
+  "macpro6": [
+   "a2x_pcibus=0x10010fe",
+   "a2x_nondrv=1"
+  ],
+  "nvidia": [
+   "NVRM.kext",
+   "gfxrst=4",
+   "nvrmholdcap=180"
+  ],
+  "test": [
+   "nmxintel=3",
+   "nmxamd=3"
+  ]
+ },
+ "patches_27": [
+  "77badd3880008f3add9f6a283a6768f4997c34eb4b7654be7a1bf61ce13204d8",
+  "87aaa53926c0054ad8365e87060ba60657d92520e7e31450d17548cf0575e011",
+  "e26b08a9e9a04fa239dca8880d7a4b0c3a254edf046025d39e4daf01cc054449",
+  "f8c4e4ebf0206eb2cc7fcb7033da36829d220d95aa6c41aad53a5824cfa81fe7",
+  "9fe1a28437b761c701504fa18cd01f21b7f8d6717984ee571ada193006a6c733",
+  "a4e6206b52526047e1e0c92241bde5a859807a9884e56ff438cfa6a6641bfcf8",
+  "6533778dc3cd76e4b3730ce443914f0577e45c17b43d91183430a635a73fe974",
+  "1971c77841975f82a92e91574fd7ea97e8d72eccb8d005820b4698db7443f0e2",
+  "893c553adeef53590b4a035f86ae01b195efae3ca9e4752506b3ca15bdbcabd8",
+  "3eb73d3ba4ad973531d0821eef5ae3a53581164d8ae997b2f7feff1803d512cc",
+  "302b0faeca217f25d80bfe26d18442f3530b36b5e6c166d08075bd3dea67e6f7",
+  "ad3b2a78e4e476f1532117c4b318354fedd3c0b7a0c2f01dbe8f953f543ebe30",
+  "6afc8f773a05700b0c6d24f03f281a4d5bbf275f503d12dab14301da158d0eb9",
+  "0cf5df3cf5ea8a69afcd1f628533473040f273988922c93d769ca07d91cba581"
+ ],
+ "patches_27_kernel_sha256": "3c9317518535791503970fbec322b9bba70e91f3a233536205ccd77b047ffc83",
+ "patches_27_own": [
+  {
+   "for": "8fc72294d3c15b367c8e453002953f31229ef948be9c7d6c6ca57ee235e61dab",
+   "in": "_thread_block_reason",
+   "patch": {
+    "base": "_thread_block_reason",
+    "comment": "NullMoth | thread_invoke in _thread_block_reason | Remove non-monotonic time check | macOS 27",
+    "count": 1,
+    "find": "TTumkAQAAA+CyAQAAA==",
+    "identifier": "kernel",
+    "limit": 8192,
+    "mask": "",
+    "replace": "TTumkAQAAGYPH0QAAA==",
+    "replace_mask": ""
+   }
+  },
+  {
+   "for": "8fc72294d3c15b367c8e453002953f31229ef948be9c7d6c6ca57ee235e61dab",
+   "in": "_thread_dispatch",
+   "patch": {
+    "base": "_thread_dispatch",
+    "comment": "NullMoth | thread_dispatch | Remove non-monotonic time check | macOS 27",
+    "count": 1,
+    "find": "TCu7kAQAAA+CUAIAAA==",
+    "identifier": "kernel",
+    "limit": 2560,
+    "mask": "",
+    "replace": "TCu7kAQAAGYPH0QAAA==",
+    "replace_mask": ""
+   }
+  }
+ ],
+ "personality": [
+  {
+   "from": "AppleACPIPlatformExpert",
+   "name": "VirtualSMC.kext",
+   "to": "IOACPIPlatformExpert"
+  }
+ ],
+ "platform": "platform.plist",
+ "set": {
+  "Misc/Security/SecureBootModel": "Disabled",
+  "PlatformInfo/Generic/SystemProductName": "Mac15,14"
+ },
+ "source_config": "config.plist",
+ "system": {
+  "dir": "system",
+  "installer": "install-system.sh"
+ }
+}
