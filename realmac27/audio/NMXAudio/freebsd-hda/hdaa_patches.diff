@@ -1,0 +1,114 @@
+--- a/sys/dev/sound/pci/hda/hdaa_patches.c
++++ b/sys/dev/sound/pci/hda/hdaa_patches.c
+@@ -196,6 +196,17 @@
+ 			    HDA_CONFIG_DEFAULTCONF_CONNECTIVITY_FIXED);
+ 			break;
+ 		}
++	} else if (id == HDA_CODEC_CS4208 &&
++	    (hda_get_subsystem_id(w->devinfo->dev) == 0x106b7800 ||
++	    hda_get_subsystem_id(w->devinfo->dev) == 0x106b6c00)) {
++		switch (nid) {
++		case 0x18:
++			config = 0x00ab9150;	/* mic jack: no presence detect */
++			break;
++		case 0x21:
++			config = 0x004be140;	/* SPDIF: no presence detect */
++			break;
++		}
+ 	} else if (id == HDA_CODEC_CX20549 && subid ==
+ 	    HP_V3000_SUBVENDOR) {
+ 		switch (nid) {
+@@ -548,6 +559,26 @@
+ 		devinfo->gpio = hdac_quirks[i].gpio;
+ 	}
+ 
++	/*
++	 * Apple machines with the Cirrus CS4208 (Mac Pro 6,1, Mac mini 7,1, MacBook Pro 11,x/12,1, MacBook Air 6,x)
++	 * switch the internal speaker amplifier with GPIO0; without it every output plays and the speaker stays silent.
++	 * Linux applies this to every Apple CS4208 (patch_cirrus.c cs4208_fixup_mac: gpio_eapd_speaker = 1). The Mac Pro
++	 * 6,1 controller reports an Intel PCI subsystem (8086:7270), so the codec's own subsystem id is checked as well.
++	 */
++	if (id == HDA_CODEC_CS4208 && devinfo->gpio == 0 &&
++	    ((subsystemid >> 16) == APPLE_VENDORID || (subid & 0xffff) == APPLE_VENDORID || subid == 0x72708086))
++		devinfo->gpio = HDAA_GPIO_SET(0);
++	/*
++	 * Mac Pro 6,1 (codec 0x106b7800) and Mac mini 7,1 (0x106b6c00): the headphone pin (0x10) reports presence
++	 * inverted, so without this the driver sees headphones in, automutes the speaker and nothing is heard. Linux sets
++	 * inv_jack_detect for the codec and turns presence detect off on the mic (0x18) and SPDIF (0x21) pins (below).
++	 */
++	if (id == HDA_CODEC_CS4208 && (subsystemid == 0x106b7800 || subsystemid == 0x106b6c00))
++		devinfo->quirks |= HDAA_QUIRK_SENSEINV;
++	if (id == HDA_CODEC_CS4208)
++		device_printf(devinfo->dev, "CS4208 card 0x%08x codec subsystem 0x%08x gpio 0x%08x\n",
++		    subid, subsystemid, devinfo->gpio);
++
+ 	/* Apply per-widget patch. */
+ 	for (i = devinfo->startnode; i < devinfo->endnode; i++) {
+ 		w = hdaa_widget_get(devinfo, i);
+@@ -801,6 +832,13 @@
+ 	if (subid == APPLE_INTEL_MAC)
+ 		hda_command(dev, HDA_CMD_12BIT(0, devinfo->nid,
+ 		    0x7e7, 0));
++	if (id == HDA_CODEC_CS4208 &&
++	    (hda_get_subsystem_id(dev) >> 16) == APPLE_VENDORID) {
++		/* vendor processing widget 0x24 on, A1 ICS, A1 enable with 300 mV threshold (as Linux does at init) */
++		hda_command(dev, HDA_CMD_12BIT(0, 0x24, 0x703, 0x01));
++		hdaa_write_coef(dev, 0x24, 0x33, 0x0001);
++		hdaa_write_coef(dev, 0x24, 0x34, 0x1c01);
++	}
+ 	if (id == HDA_CODEC_ALC269) {
+ 		if (subid == 0x16e31043 || subid == 0x831a1043 ||
+ 		    subid == 0x834a1043 || subid == 0x83981043 ||
+@@ -820,3 +858,52 @@
+ 		}
+ 	}
+ }
++
++
++/*
++ * Diagnostic for the port: the analog codec's live state after attach (GPIO, every pin's config, control, sense,
++ * EAPD, output amp, association; each association's pins and headphone redirect), published by the kext as the
++ * registry property "nmx-hda-diag". Read with: ioreg -rc NMXAudio -l | grep nmx-hda-diag
++ */
++void nmx_audio_diag_publish(const char *text);
++void
++nmx_hda_diag_fill(struct hdaa_devinfo *devinfo)
++{
++	static char buf[3072];
++	struct hdaa_widget *w;
++	device_t dev = devinfo->dev;
++	nid_t afg = devinfo->nid;
++	int o = 0, i, j;
++	uint32_t id = hdaa_codec_id(devinfo);
++
++	if ((id >> 16) == 0x1002 || (id >> 16) == 0x10de || (id >> 16) == 0x8086)
++		return;		/* HDMI/DP codecs: not interesting here */
++	o += snprintf(buf + o, sizeof(buf) - o, "codec 0x%08x ssid 0x%08x card 0x%08x quirks 0x%08x gpio cfg 0x%08x "
++	    "gpio data 0x%02x mask 0x%02x dir 0x%02x;", id, hda_get_subsystem_id(dev), hdaa_card_id(devinfo),
++	    devinfo->quirks, devinfo->gpio,
++	    hda_command(dev, HDA_CMD_12BIT(0, afg, 0xf15, 0)) & 0xff,
++	    hda_command(dev, HDA_CMD_12BIT(0, afg, 0xf16, 0)) & 0xff,
++	    hda_command(dev, HDA_CMD_12BIT(0, afg, 0xf17, 0)) & 0xff);
++	for (i = devinfo->startnode; i < devinfo->endnode && o < (int)sizeof(buf) - 160; i++) {
++		w = hdaa_widget_get(devinfo, i);
++		if (w == NULL || w->type != HDA_PARAM_AUDIO_WIDGET_CAP_TYPE_PIN_COMPLEX)
++			continue;
++		o += snprintf(buf + o, sizeof(buf) - o, " pin 0x%02x en %d cfg 0x%08x ctl 0x%02x sense 0x%08x eapd 0x%02x "
++		    "amp 0x%02x as %d conn %d;", w->nid, w->enable, w->wclass.pin.config,
++		    hda_command(dev, HDA_CMD_12BIT(0, w->nid, 0xf07, 0)) & 0xff,
++		    hda_command(dev, HDA_CMD_12BIT(0, w->nid, 0xf09, 0)),
++		    hda_command(dev, HDA_CMD_12BIT(0, w->nid, 0xf0c, 0)) & 0xff,
++		    hda_command(dev, ((uint32_t)w->nid << 20) | (0xbU << 16) | 0xa000) & 0xff,
++		    w->bindas, w->wclass.pin.connected);
++	}
++	for (i = 0; i < devinfo->ascnt && o < (int)sizeof(buf) - 120; i++) {
++		struct hdaa_audio_as *as = &devinfo->as[i];
++		o += snprintf(buf + o, sizeof(buf) - o, " as%d %s en %d hpredir %d pins", i, as->dir == HDAA_CTL_OUT ?
++		    "out" : "in", as->enable, as->hpredir);
++		for (j = 0; j < 16; j++)
++			if (as->pins[j] > 0)
++				o += snprintf(buf + o, sizeof(buf) - o, " %d:0x%02x", j, as->pins[j]);
++		o += snprintf(buf + o, sizeof(buf) - o, ";");
++	}
++	nmx_audio_diag_publish(buf);
++}

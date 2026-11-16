@@ -95,7 +95,8 @@ def identity_for(report):
 SETTABLE = ("Misc/Security/SecureBootModel", "PlatformInfo/Generic/SystemProductName")
 BOOT_ARGS_ALLOWED = ("-v", "-lilubetaall", "-vsmcbeta", "-no_compat_check",
                      "a2x_conlive=1", "a2xbusydump=2", "pci_log=0x201", "pci_log_mode=0x2", "gfxrst=4", "nvrmholdcap=180",
-                     "nmxintel=3", "nmxamd=3", "nmxfb_pipe=1")
+                     "nmxintel=3", "nmxamd=3", "nmxfb_pipe=1",
+                     "a2x_pcibus=0x10010fe", "a2x_nondrv=1")
 
 _KERNEL = re.compile(r"\d{1,2}\.\d{1,2}\.\d{1,2}\Z")
 _KEXT = re.compile(r"[A-Za-z0-9_.+-]{1,96}\.kext\Z")
@@ -388,7 +389,9 @@ def apply(efi_dir, kit, notices, report=None, kit_model=False):
         changes.append({"v3": "boot-args-diagnostic-removed", "removed": removed})
     # name=value: a value the PC's own config gives that name is replaced, so the name is there once
     # builds made here are NVIDIA builds: the built-in graphics path's arguments (only.test) are Golden Gate's to add
-    test_only = set(((kit.get("only") or {}).get("test")) or [])
+    # and the Mac Pro (Late 2013) arguments (only.macpro6) belong to that Mac alone, which Golden Gate sets up
+    only = kit.get("only") or {}
+    test_only = set(only.get("test") or []) | set(only.get("macpro6") or [])
     wanted = [a for a in kit["boot_args"] if a not in test_only]
     for a in wanted:
         if "=" in a:

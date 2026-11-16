@@ -78,7 +78,7 @@ ESP_MARGIN_KB=8192    # kept free on the startup partition after the staged copy
 NV=7C436110-AB2A-4BBB-A880-FE41995C9F82
 # All a kit's manifest may set in config.plist, and all it may add to boot-args (p1401/v3_macos27.py has the same lists).
 SET_ALLOWED="Misc/Security/SecureBootModel PlatformInfo/Generic/SystemProductName"
-BOOT_ARGS_ALLOWED="-v -lilubetaall -vsmcbeta -no_compat_check a2x_conlive=1 a2xbusydump=2 pci_log=0x201 pci_log_mode=0x2 gfxrst=4 nvrmholdcap=180 nmxintel=3 nmxamd=3 nmxfb_pipe=1"
+BOOT_ARGS_ALLOWED="-v -lilubetaall -vsmcbeta -no_compat_check a2x_conlive=1 a2xbusydump=2 pci_log=0x201 pci_log_mode=0x2 gfxrst=4 nvrmholdcap=180 nmxintel=3 nmxamd=3 nmxfb_pipe=1 a2x_pcibus=0x10010fe a2x_nondrv=1"
 # The model each NVIDIA generation presents as on macOS 27 (p1401/v3_macos27.py IDENTITY); generations without a
 # model keep what the kit sets.
 MODEL_RTX50=Mac17,15
@@ -92,6 +92,7 @@ REPORT=""; KITTAG=""   # --report yes|no: the owner's answer about start reports
 # Every step's lines also go to one log on this macOS: a step that stopped can be read afterwards, Send logs takes
 # it, and the app shows its last line while a long step runs. Kept under 1 MB: past that the older half is dropped.
 STEPLOG=/Library/NullMoth/golden-gate/steps.log
+MODELGIVEN=""
 while [ $# -gt 0 ]; do case "$1" in
   --root) ROOT=${2:-}; shift;; --kit) KIT=${2:-}; shift;; --confirm) CONFIRM=1;; --kit-model) KITMODEL=1;;
   --bring-account) ACCOUNT=${2:-}; shift;; --size-gb) SIZE_GB=${2:-}; shift;;
@@ -101,7 +102,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --macos-major) MAJOR=${2:-}; shift;; --gpu-id) GPUS="$GPUS ${2:-}"; GPUS_GIVEN=1; shift;; --pci-tree) PCITREE=${2:-}; shift;;
   --disk-free-gb) DISK_GB=${2:-}; shift;; --esp-free-kb) ESPFREE=${2:-}; shift;; --device-id) DEVIDS="$DEVIDS ${2:-}"; DEVIDS_GIVEN=1; shift;;
   --diskutil) DISKUTIL=${2:-}; shift;; --tools) TOOLS=${2:-}; shift;; --kc-work) KCWORK=${2:-}; shift;; --lay-work) LAYWORK=${2:-}; shift;; --preboot) PREBOOT=${2:-}; shift;; --step-log) STEPLOG=${2:-}; shift;;
-  --cpu-vendor) CPUV=${2:-}; shift;; --laptop) LAPTOP=${2:-}; shift;;
+  --cpu-vendor) CPUV=${2:-}; shift;; --laptop) LAPTOP=${2:-}; shift;; --model) MODELGIVEN=${2:-}; shift;;
   --display) DISPLAYS="$DISPLAYS ${2:-}"; DISPLAYS_GIVEN=1; shift;; --apple-id) APPLEIDS="$APPLEIDS ${2:-}"; APPLEIDS_GIVEN=1; shift;;
   # test-hook-end
   *) echo "STOP unknown option $1"; echo "RESULT stop"; exit 2;; esac; shift; done
@@ -709,7 +710,21 @@ not_for_this() {
   # Mac on Apple's drivers) they would hand a working iGPU's outputs to a test driver
   [ "$GFX" = test ] || { in_kit_list only.test "$1" && return 0; }
   [ "$EFIKIND" = mac ] && in_kit_list only.pc "$1" && return 0
+  # the Mac Pro (Late 2013) arguments give its PCIe switch the bus numbers Tahoe uses; on any other machine they
+  # would renumber buses that are already right
+  in_kit_list only.macpro6 "$1" && ! is_macpro6 && return 0
   return 1
+}
+# is_macpro6: this Mac is a Mac Pro (Late 2013): its own board ID, else the model OpenCore Legacy Patcher recorded
+# for it, else the model macOS reports (OpenCore may report another model on a Mac it set up, so that comes last).
+# --model gives the answer for a test.
+is_macpro6() {
+  local m="$MODELGIVEN"
+  [ -n "$m" ] || m=$(ioreg -rd1 -c IOPlatformExpertDevice 2>/dev/null | awk -F'"' '/"board-id"/{print $4}')
+  case "$m" in Mac-F60DEB81FF30ACF6|MacPro6,1) return 0;; esac
+  [ -n "$MODELGIVEN" ] && return 1
+  case "$(nvram 4D1FDA02-38C7-4A6A-9CC6-4BCCA8B30102:OCLP-Model 2>/dev/null | awk '{print $2}')" in MacPro6,1) return 0;; esac
+  [ "$(sysctl -n hw.model 2>/dev/null)" = MacPro6,1 ]
 }
 # A kext's upper kernel limit lets it load on macOS 27 when it is empty or names kernel 27 or later. A config made
 # by OpenCore Legacy Patcher gives its kexts the limit 27.99.99 as a matter of course, which says nothing about

@@ -1,0 +1,26 @@
+--- a/sys/dev/sound/pci/hda/hdaa.c
++++ b/sys/dev/sound/pci/hda/hdaa.c
+@@ -766,6 +766,7 @@
+ /*
+  * Pin sense initializer.
+  */
++void nmx_hda_diag_fill(struct hdaa_devinfo *devinfo);
+ static void
+ hdaa_sense_init(struct hdaa_devinfo *devinfo)
+ {
+@@ -6271,6 +6272,7 @@
+ 		device_printf(dev, "Pin sense init...\n");
+ 	);
+ 	hdaa_sense_init(devinfo);
++	nmx_hda_diag_fill(devinfo);
+ 
+ 	HDA_BOOTVERBOSE(
+ 		if (devinfo->quirks != 0) {
+@@ -6611,6 +6613,7 @@
+ 		device_printf(dev, "Pin sense init...\n");
+ 	);
+ 	hdaa_sense_init(devinfo);
++	nmx_hda_diag_fill(devinfo);
+ 
+ 	hdaa_unlock(devinfo);
+ 	for (i = 0; i < devinfo->num_devs; i++) {
