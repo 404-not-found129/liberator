@@ -11,6 +11,10 @@ Liberator moves an OpenCore PC that runs macOS 15 or macOS 26 to macOS 27.2 with
 - Fetching Apple's signing keys is retried, so one failed connection no longer ends the preparation.
 - A PC prepared from the Mac app has its disk and network controllers marked built in. macOS 27 then reads the internal disk as internal and the wired port as built in, which signing in to an Apple account needs.
 - Start reports, if you agree. Liberator asks once. With a yes, macOS 27 sends NullMoth one short summary of the PC and of its first start that reached the desktop, and sends the start-up logs of a start that did not. With a no, nothing is sent. The summary holds hardware models and driver state, no names, files or serial numbers.
+- Widgets that are set up through Shortcuts (Weather, Photos and others) now show their content instead of staying empty.
+- Icons drawn before the driver fix (Safari, Maps, FaceTime in the Dock) are redrawn after the update.
+- Real Macs: the Mac Pro (Late 2013) with its AMD FirePro graphics, audio through its internal speakers, USB 3 and Thunderbolt. Liberator sees which machine it runs on and sets it up for that machine. The AMD drivers are taken from the Mac's own macOS Tahoe, so start Tahoe with its graphics working first. Untried outside our own Mac Pro: please send a report.
+- The source of everything Liberator installs on macOS 27 is now in the Liberator repository: the interpreter, the translator, the Sandbox policy, the kit's installers and the real-Mac drivers.
 - For testing: a package for PCs that have only AMD or Intel built-in graphics. It is untried on real hardware. Please send a report either way.
 
 ## What you need
@@ -26,6 +30,7 @@ Download `@APP_ZIP@`, open it, and press **Prepare for Golden Gate**. Your macOS
 
 ## Known problems
 
+- Apps on macOS 27 run without Apple's app sandbox: macOS 27 has no Sandbox for Intel, and the stand-in Liberator installs does not enforce app profiles yet. Install only apps you trust.
 - On rare starts the desktop restarts once before it settles
 - A laptop's own screen is untested with this driver
 - AMD processors are built for but have no confirmed start yet
