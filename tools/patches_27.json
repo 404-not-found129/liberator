@@ -91,7 +91,6 @@
   {
    "mark": "893c553adeef53590b4a035f86ae01b195efae3ca9e4752506b3ca15bdbcabd8",
    "comment": "algrey | _cpuid_set_cpufamily | Force CPUFAMILY_INTEL_PENRYN | 11.3+",
-   "variant": "the same patch with its Base written '_cpuid_set_info', without the space",
    "identifier": "kernel",
    "found_26": 1,
    "found_27": 1,
@@ -156,11 +155,6 @@
   }
  ],
  "left": [
-  {
-   "comment": "algrey | _cpuid_set_cpufamily | Force CPUFAMILY_INTEL_PENRYN | 11.3+",
-   "identifier": "kernel",
-   "why": "macOS 26: the patch names its symbol as '_cpuid_set_info ', with a space that is in the config itself; OpenCore looks a symbol up by exactly that name, so this patch never applied on macOS 26 either"
-  },
   {
    "comment": "CaseySJ | probeBusGated | Disable 10 bit tags | 12.0+",
    "identifier": "com.apple.iokit.IOPCIFamily",

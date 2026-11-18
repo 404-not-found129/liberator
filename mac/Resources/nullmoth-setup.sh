@@ -85,6 +85,13 @@ if [ -n "${GG:-}" ]; then
     # are a 1.3 GB download and a build; every other stage is done in a moment or in minutes.
     ggmark "PLAN-ALL kit:1 check:1 stage:1 collections:12 install:74 setup:10 switch:1"
     ggmark "STAGE kit"
+    # In the one-button run the archive is one the app found in Downloads, not one the user chose. macOS keeps that
+    # folder from a program it has not been allowed for, this shell included: two runs stopped right here with
+    # "Operation not permitted" for a file that was only there to save a download. An archive that cannot be read is
+    # passed over and the kit is downloaded, as when none is there.
+    if [ -n "${GGKITFILE:-}" ] && ! head -c 1 "$GGKITFILE" >/dev/null 2>&1; then
+      echo "NOTE the macOS 27 support archive at $GGKITFILE could not be read (macOS did not allow it); it is downloaded instead"; GGKITFILE=""
+    fi
     if [ -n "${GGKITFILE:-}" ]; then /bin/bash "$GGK" get --file "$GGKITFILE" | ggkitlines drop; ggkrc=${PIPESTATUS[0]}
     else /bin/bash "$GGK" get | ggkitlines drop; ggkrc=${PIPESTATUS[0]}; fi
     [ "$ggkrc" = 0 ] || { echo "RESULT stop"; exit 1; }
@@ -1449,6 +1456,31 @@ else
        nvram 4D1FDA02-38C7-4A6A-9CC6-4BCCA8B30102:opencore-version >/dev/null 2>&1; then
       found=${found# }; BOOT_BOUND=1; ok "OpenCore started this Mac and $found holds the only OpenCore on any connected disk"
     fi
+    # Still two or more, with the same config on each (an internal disk and the stick it was copied from, neither on
+    # the disk macOS runs from): OpenCore's own log decides. With file logging on, OpenCore writes
+    # opencore-<date>-<time>.txt to the root of the partition it started from, at every start, seconds before the
+    # kernel. A candidate that holds a log from the quarter of an hour before this boot is the one that started it,
+    # when only one does. The firmware clock that names the log runs in UTC or in local time, so both are tried.
+    # (Measured on the PC this was written for: log 22:42:25 UTC, kernel boot 22:42:50 UTC; the other partition's
+    # newest log was two days old.)
+    # oc-log-begin
+    if [ "$BOOT_BOUND" != 1 ]; then
+      bsec=$(sysctl -n kern.boottime 2>/dev/null | sed -E 's/^[^0-9]*sec = ([0-9]+).*/\1/'); match=""
+      case "$bsec" in ''|*[!0-9]*) bsec="";; esac
+      if [ -n "$bsec" ]; then
+        for d in $found; do mount_efi "$d" || continue; mp=$MOUNT_POINT; hit=0
+          for f in "$mp"/opencore-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9].txt; do
+            [ -f "$f" ] || continue; t=${f##*/opencore-}; t=${t%.txt}
+            for z in -u ""; do e=$(date -j $z -f '%Y-%m-%d-%H%M%S' "$t" +%s 2>/dev/null) || continue
+              [ "$e" -le "$bsec" ] && [ $((bsec - e)) -le 900 ] && hit=1; done
+          done
+          [ $hit = 1 ] && match="$match $d"; done
+      fi
+      if [ "$(echo $match | wc -w | tr -d ' ')" = 1 ]; then
+        found=${match# }; BOOT_BOUND=1; ok "OpenCore started this Mac from $found (it holds OpenCore's own log of this start)"
+      fi
+    fi
+    # oc-log-end
     if [ "$BOOT_BOUND" != 1 ]; then
       for d in $found; do echo "NOTE candidate $d"; done
       # 2.6.5 setup logs NM-FEPPPTQZ, NM-M3G4YM2Z (three candidates) stopped here with no boot-path, so nothing said why

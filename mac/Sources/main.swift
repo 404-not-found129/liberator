@@ -581,10 +581,12 @@ final class App: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDe
                 r.addButton(withTitle: "Send"); r.addButton(withTitle: "Don't send")
                 if r.runModal() == .alertFirstButtonReturn { extra.append("--report-consent") }
                 // An archive of this build's kit that is already in Downloads is used instead of downloading it again;
-                // setup checks it against the pin either way.
+                // setup checks it against the pin either way. It is handed over only when this app could open it:
+                // that is when macOS asks the user about the Downloads folder, and an archive nobody may read is
+                // passed over, so that setup downloads the kit as if none were there (GoldenGate.readable).
                 let name = GoldenGate.pinValue(App.goldenGatePin() ?? "", "name")
                 let local = NSHomeDirectory() + "/Downloads/" + name
-                if !name.isEmpty, App.goldenGateKitState() != "current", FileManager.default.fileExists(atPath: local) { extra += ["--v3-kit-file", local] }
+                if !name.isEmpty, App.goldenGateKitState() != "current", GoldenGate.readable(local) { extra += ["--v3-kit-file", local] }
                 run(mode: "goldengate", pkg: "", efi: b["efi"] as? String ?? "auto", extra: extra); break
             }
             if step == "kit" {

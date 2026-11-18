@@ -9,14 +9,16 @@ rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Python checker decided the same way (tests/efi_rules, cases from tools/efi_rules_vectors.py).
 T=$(mktemp -d)
 xcrun swiftc -O -target x86_64-apple-macos15.0 -sdk "$SDK" Sources/EfiRules.swift tests/efi_rules/main.swift -o "$T/efi_rules_test"
+# On an Intel or AMD machine RUN is empty, and the bash macOS ships (3.2) calls an empty array unbound under set -u:
+# the build stopped at the first test with "RUN[@]: unbound variable". ${RUN[@]+...} expands to nothing there.
 RUN=(); [ "$(uname -m)" = arm64 ] && RUN=(arch -x86_64)
-"${RUN[@]}" "$T/efi_rules_test" ../p1401/efi_rules.json tests/efi_rules/vectors.json || { echo "STOP: the Mac EFI checker disagrees with 1401's"; exit 1; }
+${RUN[@]+"${RUN[@]}"} "$T/efi_rules_test" ../p1401/efi_rules.json tests/efi_rules/vectors.json || { echo "STOP: the Mac EFI checker disagrees with 1401's"; exit 1; }
 xcrun swiftc -O -target x86_64-apple-macos15.0 -sdk "$SDK" Sources/TitleBar.swift tests/title_bar/main.swift -o "$T/title_bar_test"
-"${RUN[@]}" "$T/title_bar_test" || { echo "STOP: the window cannot be dragged by its title bar"; exit 1; }
+${RUN[@]+"${RUN[@]}"} "$T/title_bar_test" || { echo "STOP: the window cannot be dragged by its title bar"; exit 1; }
 xcrun swiftc -O -target x86_64-apple-macos15.0 -sdk "$SDK" Sources/Mirror.swift tests/mirror/main.swift -o "$T/mirror_test"
-"${RUN[@]}" "$T/mirror_test" || { echo "STOP: the download mirror maps an address it must refuse"; exit 1; }
+${RUN[@]+"${RUN[@]}"} "$T/mirror_test" || { echo "STOP: the download mirror maps an address it must refuse"; exit 1; }
 xcrun swiftc -O -target x86_64-apple-macos15.0 -sdk "$SDK" Sources/OSGate.swift tests/os_gate/main.swift -o "$T/os_gate_test"
-"${RUN[@]}" "$T/os_gate_test" || { echo "STOP: the app would install the driver on a macOS it is not built for"; exit 1; }
+${RUN[@]+"${RUN[@]}"} "$T/os_gate_test" || { echo "STOP: the app would install the driver on a macOS it is not built for"; exit 1; }
 rm -rf "$T"
 cp Resources/* "$APP/Contents/Resources/"
 # What exists only for the tests is removed from the copies the app carries (the sources keep it): the options that
@@ -92,6 +94,7 @@ cat > "$APP/Contents/Info.plist" <<PL
 <key>NSHumanReadableCopyright</key><string>© 2026 NullMoth Systems</string>
 <key>NSHighResolutionCapable</key><true/>
 <key>NSRemovableVolumesUsageDescription</key><string>Liberator reads the OpenCore settings on your USB stick or disk to install the driver there.</string>
+<key>NSDownloadsFolderUsageDescription</key><string>Liberator looks in Downloads for the macOS 27 support archive, so that it does not have to download it again.</string>
 <key>NSAppleEventsUsageDescription</key><string>Liberator asks macOS for your password to install the driver, and to restart when you click Restart.</string>
 </dict></plist>
 PL

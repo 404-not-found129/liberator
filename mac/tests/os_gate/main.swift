@@ -148,6 +148,21 @@ let sha = String(repeating: "ab", count: 32)
 let pin = "name nullmoth-v3-kit-3.0.0-beta.1.tar.gz\ntag v3.0.0-beta.1\nsize 180000000\nsha256 \(sha)\n"
 check(GoldenGate.pinValue(pin, "sha256") == sha && GoldenGate.pinValue(pin, "size") == "180000000" && GoldenGate.pinValue(pin, "none") == "", "the pin's values are read by name")
 check(GoldenGate.kitState(pin: nil, record: sha, installed: true) == "none", "a build with no pin offers no macOS 27, whatever is installed")
+// An archive found in Downloads is handed to setup only when the app itself could open it (the privacy setting on that
+// folder is asked about in the app's name); one it cannot read is passed over and the kit is downloaded.
+do {
+    let dir = NSTemporaryDirectory() + "os-gate-" + UUID().uuidString
+    try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+    let good = dir + "/kit.tar.gz", empty = dir + "/empty.tar.gz", locked = dir + "/locked.tar.gz"
+    FileManager.default.createFile(atPath: good, contents: Data([0x1f, 0x8b]))
+    FileManager.default.createFile(atPath: empty, contents: Data())
+    FileManager.default.createFile(atPath: locked, contents: Data([0x1f, 0x8b]), attributes: [.posixPermissions: 0o000])
+    check(GoldenGate.readable(good), "an archive the app can open is one it may hand to setup")
+    check(!GoldenGate.readable(locked) || getuid() == 0, "an archive the app is not allowed to open is passed over")
+    check(!GoldenGate.readable(empty) && !GoldenGate.readable(dir) && !GoldenGate.readable(dir + "/none.tar.gz"), "an empty file, a folder and a missing file are passed over too")
+    try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: locked)
+    try? FileManager.default.removeItem(atPath: dir)
+}
 check(GoldenGate.kitState(pin: "name x\nsha256 short\n", record: nil, installed: false) == "none", "a pin without a whole checksum is no pin")
 check(GoldenGate.kitState(pin: pin, record: nil, installed: false) == "absent", "a pin and no kit: the kit is to be fetched")
 check(GoldenGate.kitState(pin: pin, record: sha + "\n", installed: true) == "current", "a kit from this build's archive is current")

@@ -122,6 +122,17 @@ enum GoldenGate {
         return (record ?? "").trimmingCharacters(in: .whitespacesAndNewlines) == want ? "current" : "other"
     }
 
+    /// True when this app can read the first byte of the file. The Downloads folder is behind a privacy setting that
+    /// macOS checks against this app, also for the root shell that runs setup: an archive there that the app had never
+    /// opened was refused to the shell ("Operation not permitted") and the whole move stopped at its first step, for
+    /// a file that was only meant to save a download. Opening it here is when macOS asks the user, in this app's name.
+    static func readable(_ path: String) -> Bool {
+        guard let handle = FileHandle(forReadingAtPath: path) else { return false }
+        defer { try? handle.close() }
+        guard let first = try? handle.read(upToCount: 1) else { return false }
+        return first.count == 1
+    }
+
     /// The kit folder, or "" when Golden Gate is not offered on this Mac.
     static func kit(exists: (String) -> Bool = { FileManager.default.fileExists(atPath: $0) }) -> String {
         exists(kitPath + "/v3-kit.json") ? kitPath : ""

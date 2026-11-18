@@ -35,10 +35,16 @@ FIELDS = ("Identifier", "Base", "Find", "Mask", "Count", "Limit", "Skip")
 
 def mark(p):
     """The digest of one patch entry. Data as base64 and numbers in decimal, as `plutil -extract ... raw` prints them;
-    a key that is absent is an empty field. Joined with '|' and a trailing '|'."""
+    a key that is absent is an empty field. Joined with '|' and a trailing '|'.
+
+    A name (Identifier, Base) is taken the way OpenCore reads it, with the white space around it removed: its XML
+    reader skips white space before a string and drops it after (OcXmlLib, XmlParseContent). So "_cpuid_set_info ",
+    as the usual AMD list writes it, and "_cpuid_set_info" are one patch with one mark."""
     out = []
     for k in FIELDS:
         v = p.get(k)
+        if isinstance(v, str):
+            v = v.strip()
         if v is None:
             out.append("")
         elif isinstance(v, (bytes, bytearray)):
@@ -171,15 +177,14 @@ class Image:
 
     def hits(self, p):
         """(list of offsets, reason). reason is None when the search could be made."""
-        base = p.get("Base") or ""
+        # The name as OpenCore has it: its reader removes the white space around a string of the config, so a symbol
+        # written "_cpuid_set_info " is looked up as _cpuid_set_info and found. (Measured, too: a Ryzen PC whose
+        # config has that space logs this patch as "Success" on kernels 24.6 and 25.6.) An earlier version of this
+        # tool took the space as part of the name and left such a patch out as one that "never applied".
+        base = (p.get("Base") or "").strip()
         start = 0
         if base:
             if base not in self.syms:
-                if base.strip() != base and base.strip() in self.syms:
-                    # OpenCore looks a symbol up by the exact name in the config and does not trim it, so a name with
-                    # a space at either end is never found: the patch is skipped on every kernel, not only this one.
-                    return None, (f"the patch names its symbol as {base!r}, with a space that is in the config itself; "
-                                  "OpenCore looks a symbol up by exactly that name, so this patch never applied on macOS 26 either")
                 return None, f"the symbol {base!r} is not in this binary"
             start = offset_of(self.segs, self.syms[base])
             if start is None:
@@ -336,39 +341,29 @@ def check(k26, k27, kexts, plists):
     return carried, left, build_own(OWN, images)
 
 
-def variants(p):
-    """The patch as written, then the same entry with its Base trimmed when the Base has a space at either end.
-    The patch is named by mark(), which includes Base, so a config that carries the clean name has a different mark
-    from one with the space. A list in this repo only ever holds one of the two, while users hold either: both are
-    judged, each on its own, and the trimmed one is only ever derived from a real entry, never written by hand."""
-    yield p, ""
-    base = p.get("Base") or ""
-    if base and base.strip() != base and base.strip():
-        yield dict(p, Base=base.strip()), f"the same patch with its Base written {base.strip()!r}, without the space"
-
-
 def judge_all(patches, images):
     """(carried, left) for a list of plist entries; see the module docstring for what carried means."""
     carried, left, seen = [], [], set()
     for entry in patches:
         if not covers_26(entry):
             continue
-        for p, note in variants(entry):
-            m = mark(p)
-            if m in seen:
-                continue
-            seen.add(m)
-            ident = p.get("Identifier", "")
-            row = {"comment": p.get("Comment", ""), **({"variant": note} if note else {})}
-            if ident not in images:
-                left.append({**row, "why": f"no macOS 26 and 27 binaries were given for {ident!r}"})
-                continue
-            ok, why, detail = judge(p, *images[ident])
-            row.update({"identifier": ident, **detail})
-            if ok:
-                carried.append({"mark": m, **row})
-            else:
-                left.append({**row, "why": why})
+        # a name written with a space around it and the same name without are one patch (mark()), judged once
+        p = entry
+        m = mark(p)
+        if m in seen:
+            continue
+        seen.add(m)
+        ident = (p.get("Identifier") or "").strip()
+        row = {"comment": p.get("Comment", "")}
+        if ident not in images:
+            left.append({**row, "why": f"no macOS 26 and 27 binaries were given for {ident!r}"})
+            continue
+        ok, why, detail = judge(p, *images[ident])
+        row.update({"identifier": ident, **detail})
+        if ok:
+            carried.append({"mark": m, **row})
+        else:
+            left.append({**row, "why": why})
     return carried, left
 
 
@@ -504,22 +499,24 @@ def selftest():
         all(re.fullmatch(r"[A-Za-z0-9 _./|:+-]+", o["patch"][f]) for o in OWN for f in ("Comment", "Base", "Identifier")))
     spaced = {"Identifier": "kernel", "Base": "_first ", "Find": f1, "Count": 1}
     ok, why, _ = judge(spaced, a, b_same)
-    arm("a symbol written with a space at the end is left out, and the reason says it never applied on macOS 26 either",
-        not ok and "'_first '" in why and "never applied on macOS 26 either" in why, why)
+    arm("a symbol written with a space at the end is looked up without it, as OpenCore does, and the patch is carried",
+        ok and mark(spaced) == mark(dict(spaced, Base="_first")) and mark(spaced) != mark(dict(spaced, Base="_second")), why)
+    arm("the same for a space before the name and for a space after the Identifier",
+        mark(dict(spaced, Base=" _first", Identifier="kernel ")) == mark(dict(spaced, Base="_first")))
     ok, why, _ = judge(dict(spaced, Base="_nothere"), a, b_same)
     arm("control: a symbol that is simply missing keeps the plain reason", not ok and "is not in this binary" in why and "space" not in why, why)
     spaced_masked = dict(masked, Base="_second ", MinKernel="20.4.0", MaxKernel="25.99.99", Comment="spaced")
     car, lft = judge_all([spaced_masked], {"kernel": (a, b_same)})
     clean = dict(spaced_masked, Base="_second")
-    arm("the clean-Base form of a patch written with a space is derived, judged on its own, and carried under its own mark",
-        [r["mark"] for r in car] == [mark(clean)] and "without the space" in car[0].get("variant", "") and car[0]["in"] == ["_second"], car)
-    arm("and the spaced form stays left out with its reason, under the mark a config with the space has",
-        len(lft) == 1 and "never applied on macOS 26 either" in lft[0]["why"] and mark(spaced_masked) not in [r["mark"] for r in car], lft)
+    arm("a patch written with a space after its symbol is carried once, under the mark the clean name has",
+        [r["mark"] for r in car] == [mark(clean)] and car[0]["in"] == ["_second"] and lft == [], (car, lft))
+    car, lft = judge_all([spaced_masked, clean], {"kernel": (a, b_same)})
+    arm("a list that holds both forms judges them as the one patch they are", len(car) == 1 and lft == [], (car, lft))
     car, lft = judge_all([spaced_masked], {"kernel": (a, nosym)})
-    arm("a clean-Base form that fails a check on macOS 27 is NOT carried, and says why",
-        car == [] and len(lft) == 2 and "'_second' is not in this binary" in lft[1]["why"] and "without the space" in lft[1]["variant"], (car, lft))
+    arm("such a patch that fails a check on macOS 27 is NOT carried, and says why",
+        car == [] and len(lft) == 1 and "'_second' is not in this binary" in lft[0]["why"], (car, lft))
     car, lft = judge_all([dict(masked, MinKernel="20.4.0", MaxKernel="25.99.99")], {"kernel": (a, b_same)})
-    arm("control: a patch with a clean Base is judged once, with no derived form", len(car) == 1 and "variant" not in car[0] and lft == [], (car, lft))
+    arm("control: a patch with a clean Base is judged once", len(car) == 1 and lft == [], (car, lft))
     print(f"{len(fails)} failed")
     return 1 if fails else 0
 

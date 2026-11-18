@@ -93,6 +93,13 @@ def run(step, root, kit="", *more):
         else:
             flat.append(more[i])
             i += 1
+    # What a step would otherwise measure on the machine the tests run on is pinned, so the result is the same on any
+    # Mac: an Intel processor (an AMD one is given the kit's own kernel patches) and no AMD or Intel display device
+    # (one would put the machine on a graphics path of its own). A test that names either is left as it is.
+    if "--cpu-vendor" not in flat:
+        flat += ["--cpu-vendor", "GenuineIntel"]
+    if "--display" not in flat and "--gpu-id" not in flat:
+        flat += ["--display", ""]
     args = ["/bin/bash", SCRIPT, step, "--root", root] + (["--kit", kit] if kit else []) + flat
     env = {k: v for k, v in os.environ.items() if k != v3_macos27.KIT_ENV}
     r = subprocess.run(args, capture_output=True, text=True, timeout=300, env=env)
@@ -236,9 +243,13 @@ with tempfile.TemporaryDirectory() as td:
     arm("a kit that names no cards still accepts every card the driver takes, and words the notice from this app's own record",
         rc == 0 and "(so far: NVIDIA GeForce RTX 5060 (2D05))" in out and rc2 == 0 and "has not been run on" not in out2, out + out2)
 
-    # 2c. graphics other than NVIDIA. Three paths: the NVIDIA driver, Apple's own AMD and Intel drivers (real Macs,
-    # and the Radeon cards Apple shipped), 1401's AMD and Intel test drivers. A path is offered only when the kit
-    # says it carries macOS 27 graphics for it; a kit that says nothing is an NVIDIA kit.
+    # 2c. graphics other than NVIDIA. Three paths: the NVIDIA driver, Apple's own AMD and Intel drivers (real Macs
+    # only), 1401's AMD and Intel test drivers. A path is offered only when the kit says it carries macOS 27 graphics
+    # for it; a kit that says nothing is an NVIDIA kit.
+    # A PC never takes the path of Apple's own drivers: its macOS 26 keeps them inside the kernel collections and the
+    # shared library cache, not as files the package for that path could carry over. So on a PC a Radeon Apple
+    # shipped, and Intel graphics Apple's driver runs, take the test path like any other chip, and the check says
+    # what that means for a card that has Metal today. The real Mac's side of this is in 2d.
     def mac(displays, apple=(), card=None):
         a = ["--macos-major", "26", "--disk-free-gb", "110", "--cpu-vendor", "GenuineIntel", "--laptop", "no", "--tools", TOOLS]
         a += ["--gpu-id", card] if card else ["--apple-id", "0000:0000"]
@@ -260,24 +271,34 @@ with tempfile.TemporaryDirectory() as td:
     POLARIS, UHD630, XE, RX7600 = "1002:67DF", "8086:3E92", "8086:9A49", "1002:7480"
     APPLE = (POLARIS, UHD630, "1002:7340")
     rc, out = run("preflight", fx.efi, fx.kit_path, *mac([POLARIS], APPLE))
-    arm("today's kit (names no graphics paths) still refuses a Mac on Apple's AMD driver, and says what it found and what the kit carries",
-        rc == 1 and out.count("FAIL ") == 1 and "FAIL this Mac has AMD graphics (1002:67DF), which Apple's own driver in this macOS runs; "
+    arm("today's kit (names no graphics paths) still refuses a PC on a Radeon, and says what it found and what the kit carries",
+        rc == 1 and out.count("FAIL ") == 1 and "FAIL this Mac has AMD graphics (1002:67DF), which 1401's test driver runs; "
         "this kit has no macOS 27 graphics for it yet (it carries: nvidia)" in out and tree(fx.efi) == before, out)
+    APPLE_NOTE = " runs on Apple's own driver under this macOS. macOS 27 has no Apple driver for it"
     rc, out = run("preflight", fx.efi, applek, *mac([POLARIS], APPLE))
-    arm("a kit that carries Apple's drivers accepts a Mac with a Radeon Apple shipped, on the apple path, and says it is untried",
-        rc == 0 and "FAIL" not in out and "OK this Mac has AMD graphics (1002:67DF), which Apple's own driver in this macOS runs, and this kit carries macOS 27 graphics for it" in out
-        and "NOTE graphics path: apple" in out and "macOS 27 has not been started on AMD graphics with this kit yet" in out and out.count(SEND) == 1, out)
-    rc, out = run("preflight", fx.efi, applek, *mac([UHD630], APPLE))
-    arm("the same kit accepts a Mac whose only graphics are Intel's on Apple's driver", rc == 0 and "Intel graphics (8086:3E92), which Apple's own driver" in out and "NOTE graphics path: apple" in out, out)
+    arm("a kit that carries Apple's drivers but no test driver refuses a PC with a Radeon Apple shipped, and names the test path as the one it would need",
+        rc == 1 and out.count("FAIL ") == 1 and "NOTE graphics path: test" in out and "graphics path: apple" not in out
+        and "AMD graphics (1002:67DF), which 1401's test driver runs; this kit has no macOS 27 graphics for it yet (it carries: nvidia, apple)" in out, out)
+    rc, out = run("preflight", fx.efi, allk, *mac([POLARIS], APPLE))
+    arm("a kit that carries the test drivers accepts a PC with a Radeon Apple shipped, on the test path, says what changes for that card and that it is untried",
+        rc == 0 and "FAIL" not in out and "OK this Mac has AMD graphics (1002:67DF), which 1401's test driver runs, and this kit carries macOS 27 graphics for it" in out
+        and "NOTE graphics path: test" in out and "NOTE AMD graphics (1002:67DF)" + APPLE_NOTE in out and "without graphics acceleration" in out
+        and "macOS 27 has not been started on AMD graphics with this kit yet" in out and out.count(SEND) == 1, out)
+    rc, out = run("preflight", fx.efi, allk, *mac([UHD630], APPLE))
+    arm("the same for a PC whose only graphics are Intel's on Apple's driver", rc == 0 and "FAIL" not in out and "Intel graphics (8086:3E92), which 1401's test driver runs" in out
+        and "NOTE graphics path: test" in out and "NOTE Intel graphics (8086:3E92)" + APPLE_NOTE in out, out)
     rc, out = run("preflight", fx.efi, applek, *mac([XE], APPLE))
     arm("that kit refuses Intel graphics only a test driver runs, naming the test path", rc == 1 and out.count("FAIL ") == 1
         and "Intel graphics (8086:9A49), which 1401's test driver runs; this kit has no macOS 27 graphics for it yet (it carries: nvidia, apple)" in out, out)
     rc, out = run("preflight", fx.efi, allk, *mac([XE], APPLE))
-    arm("a kit that carries the test drivers accepts Intel processor graphics on the test path", rc == 0 and "NOTE graphics path: test" in out and "FAIL" not in out, out)
+    arm("a kit that carries the test drivers accepts Intel processor graphics on the test path, and says nothing of Apple's driver for a chip it never ran",
+        rc == 0 and "NOTE graphics path: test" in out and "FAIL" not in out and APPLE_NOTE not in out, out)
     rc, out = run("preflight", fx.efi, allk, *mac([RX7600], APPLE))
-    arm("and an AMD card Apple never shipped, on the test path", rc == 0 and "AMD graphics (1002:7480), which 1401's test driver runs" in out and "NOTE graphics path: test" in out, out)
+    arm("and an AMD card Apple never shipped, on the test path", rc == 0 and "AMD graphics (1002:7480), which 1401's test driver runs" in out and "NOTE graphics path: test" in out and APPLE_NOTE not in out, out)
     rc, out = run("preflight", fx.efi, allk, *mac([XE, POLARIS], APPLE))
-    arm("with both kinds present, the chip on Apple's own driver is the one chosen", rc == 0 and "NOTE graphics path: apple" in out and "1002:67DF" in out, out)
+    arm("with both kinds present on a PC the path is the test one all the same, and the card on Apple's driver is the one the note names, though it is not listed first",
+        rc == 0 and "NOTE graphics path: test" in out and "graphics path: apple" not in out and "Intel graphics (8086:9A49), which 1401's test driver runs" in out
+        and "NOTE AMD graphics (1002:67DF)" + APPLE_NOTE in out, out)
     rc, out = run("preflight", fx.efi, allk, *mac([XE, POLARIS], APPLE, card="2D05"))
     arm("an NVIDIA card the driver takes still wins over both", rc == 0 and "NOTE graphics path: nvidia" in out and "OK NVIDIA card NVIDIA GeForce RTX 5060 (2D05)" in out and "test driver" not in out, out)
     rc, out = run("preflight", fx.efi, allk, *mac(["1234:1111"], APPLE))
@@ -382,10 +403,80 @@ with tempfile.TemporaryDirectory() as td:
     arm("a real Mac's own OpenCore files are accepted, said to be a Mac's, and said to be untried",
         rc == 0 and "FAIL" not in out and "are a Mac's own OpenCore files (not a 1401 build)" in out
         and "macOS 27 with this kit has not been started on a real Mac yet" in out and "NOTE graphics path: apple" in out, out)
+    MACBASE = [a for a in MACARGS if a not in ("--display", "1002:6810", "--apple-id")]
+    mallk = mac_kit("kit-mac-all", graphics=["nvidia", "apple", "test"])
+    rc, out = run("preflight", mac1.efi, mallk, *MACBASE, "--display", "8086:9A49", "--display", "1002:67DF", "--apple-id", "1002:67DF")
+    arm("on a real Mac with both kinds present, the chip on Apple's own driver is the one chosen",
+        rc == 0 and "NOTE graphics path: apple" in out and "AMD graphics (1002:67DF), which Apple's own driver in this macOS runs" in out, out)
+    rc, out = run("preflight", mac1.efi, mallk, *MACBASE, "--display", "1002:7480", "--apple-id", "1002:67DF")
+    arm("a real Mac whose chip only the test driver runs takes the test path", rc == 0 and "NOTE graphics path: test" in out and "runs on Apple's own driver under this macOS" not in out, out)
+    # 2d2. a PC's own OpenCore files. A PC without an NVIDIA card never ran 1401's driver setup, so nothing could
+    # have marked its startup files as 1401's. On AMD or Intel graphics they are accepted as the PC's own; with an
+    # NVIDIA card the driver takes they are refused exactly as before.
     pcish = real_mac("pcish", smc_on=True)
+    pckit = mac_kit("kit-pc", graphics=["nvidia", "apple", "test"], only={"nvidia": ["gfxrst=4"], "test": ["nmxintel=3", "nmxamd=3"]},
+                    boot_args=json.load(open(os.path.join(fx.kit_path, v3_macos27.MANIFEST)))["boot_args"] + ["gfxrst=4", "nmxintel=3", "nmxamd=3"])
+    rc, out = run("preflight", pcish.efi, pckit, *MACARGS)
+    arm("the same files with an SMC stand-in enabled are a PC's: on a Radeon they are accepted as this PC's own, on the test path, and said to be untried",
+        rc == 0 and "FAIL" not in out and "are this PC's own OpenCore files (not a 1401 build), accepted on AMD or Intel graphics" in out
+        and "NOTE graphics path: test" in out and "has not been started from startup files 1401 did not build yet" in out, out)
     rc, out = run("preflight", pcish.efi, mkit, *MACARGS)
-    arm("control: the same files with an SMC stand-in enabled are a PC's, and without 1401's mark they are refused",
-        rc == 1 and "FAIL the startup files" in out, out)
+    arm("a kit without the test drivers refuses that PC for its graphics alone, not for its startup files",
+        rc == 1 and out.count("FAIL ") == 1 and "which 1401's test driver runs; this kit has no macOS 27 graphics for it yet" in out, out)
+    rc, out = run("preflight", pcish.efi, pckit, *MACBASE, "--gpu-id", "2D05")
+    arm("control: with an NVIDIA card the driver takes, a PC's startup files without 1401's mark are refused as before",
+        rc == 1 and out.count("FAIL ") == 1 and "FAIL the startup files at" in out and "are a 1401 build" in out, out)
+    before_pc = tree(pcish.efi)
+    rc, out = run("stage", pcish.efi, pckit, "--gpu-id", "2D05")
+    arm("and stage refuses them too, changing nothing", rc == 1 and "not made by 1401" in out and tree(pcish.efi) == before_pc, out)
+    rc, out = run("stage", pcish.efi, pckit, *[a for a in MACARGS if a not in ("--disk-free-gb", "110", "--tools", TOOLS)])
+    sp = plistlib.load(open(os.path.join(pcish.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if rc == 0 else {"Kernel": {"Add": []}, "NVRAM": {"Add": {}}, "PlatformInfo": {"Generic": {}}}
+    pargs = " " + " ".join(v.get("boot-args", "") for v in sp["NVRAM"]["Add"].values() if isinstance(v, dict)) + " "
+    arm("staging a PC's own files on a Radeon: the test driver's arguments are added, the NVIDIA driver's are left out, and the path is said",
+        rc == 0 and " nmxamd=3 " in pargs and " nmxintel=3 " in pargs and " gfxrst=4 " not in pargs and " -no_compat_check " in pargs
+        and "NOTE graphics path: test" in out, out + pargs)
+    # The kit's AMD/Intel driver leaves a chip on its own list of chips Apple's drivers run to Apple's driver, unless
+    # boot argument nmxamd_native (nmxintel_native) is not 0. A PC's macOS 27 has no Apple driver, so a PC on the test
+    # path is given the argument for each maker it has a chip of; without it the driver never takes such a card.
+    arm("that PC's test driver is told to take the Radeon itself, since macOS 27 has no Apple driver to leave it to, and the staging says so",
+        pargs.count(" nmxamd_native=1 ") == 1 and "nmxintel_native" not in pargs
+        and "NOTE the test driver is told to take this PC's graphics itself (nmxamd_native=1)" in out, out + pargs)
+    arm("that PC is given the kit's model like any PC, and its unknown kexts stop at macOS 26",
+        sp["PlatformInfo"]["Generic"].get("SystemProductName") == "Mac15,14" and "NOTE model: Mac15,14" in out
+        and "NOTE RestrictEvents.kext was never run on macOS 27" in out, out + repr(sp["PlatformInfo"]["Generic"]))
+    arm("the macOS 26 startup files of that PC are untouched by the staging", {k: v for k, v in tree(pcish.efi).items() if k.startswith(os.path.join("EFI", "OC") + os.sep)}
+        == {k: v for k, v in before_pc.items() if k.startswith(os.path.join("EFI", "OC") + os.sep)})
+    pc2 = real_mac("pcish2", smc_on=True)
+    cp2 = os.path.join(pc2.efi, "EFI", "OC", "config.plist"); c2 = plistlib.load(open(cp2, "rb"))
+    for v in c2["NVRAM"]["Add"].values():
+        if isinstance(v, dict) and "boot-args" in v:
+            v["boot-args"] += " nmxamd_native=0"            # a value of the PC's own for that name
+    plistlib.dump(c2, open(cp2, "wb"))
+    rc, out = run("stage", pc2.efi, pckit, "--macos-major", "26", "--cpu-vendor", "GenuineIntel", "--laptop", "no",
+                  "--display", "8086:9A49", "--display", "1002:67DF", "--apple-id", "1002:67DF")
+    s2 = plistlib.load(open(os.path.join(pc2.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if rc == 0 else {"NVRAM": {"Add": {}}}
+    a2 = " " + " ".join(v.get("boot-args", "") for v in s2["NVRAM"]["Add"].values() if isinstance(v, dict)) + " "
+    arm("a PC with an Intel chip and a Radeon is given both arguments, each once, and a value of its own for the name is replaced",
+        rc == 0 and a2.count(" nmxamd_native=1 ") == 1 and a2.count(" nmxintel_native=1 ") == 1 and "nmxamd_native=0" not in a2
+        and "(nmxintel_native=1 nmxamd_native=1)" in out, out + a2)
+    mac2 = real_mac("mac-on-test")
+    rc, out = run("stage", mac2.efi, pckit, "--macos-major", "26", "--cpu-vendor", "GenuineIntel", "--laptop", "no", "--display", "1002:7480", "--apple-id", "1002:67DF")
+    s3 = plistlib.load(open(os.path.join(mac2.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if rc == 0 else {"NVRAM": {"Add": {}}}
+    a3 = " " + " ".join(v.get("boot-args", "") for v in s3["NVRAM"]["Add"].values() if isinstance(v, dict)) + " "
+    arm("control: a real Mac on the test path is not given it (a Mac may carry Apple's drivers over)",
+        rc == 0 and "NOTE graphics path: test" in out and " nmxamd=3 " in a3 and "_native" not in a3 and "told to take" not in out, out + a3)
+    # an AMD processor is given the kit's own kernel patches whatever its config holds; a config with no patch list
+    # at all had nowhere to put the first one, and the staging stopped
+    nopatch = fresh(td, "amd-no-patch-list")
+    cpn = os.path.join(nopatch.efi, "EFI", "OC", "config.plist"); cn = plistlib.load(open(cpn, "rb")); cn["Kernel"].pop("Patch", None); plistlib.dump(cn, open(cpn, "wb"))
+    ownk = mac_kit("kit-own-patches", patches_27_own=[{"for": "0" * 64, "in": "_f", "patch": {"base": "_f", "comment": "NullMoth | own | macOS 27", "count": 1,
+                   "find": "AAEC", "identifier": "kernel", "limit": 64, "mask": "", "replace": "AAED", "replace_mask": ""}}])
+    rc, out = run("stage", nopatch.efi, ownk, "--gpu-id", "2D05", "--cpu-vendor", "AuthenticAMD")
+    pl = plistlib.load(open(os.path.join(nopatch.efi, "EFI", gg.STAGED, "config.plist"), "rb"))["Kernel"].get("Patch", []) if rc == 0 else []
+    arm("control: an NVIDIA PC's startup files get nothing of the test driver's", rc == 0 and "_native" not in open(os.path.join(nopatch.efi, "EFI", gg.STAGED, "config.plist"), "rb").read().decode("utf-8", "replace")
+        and "told to take" not in out, out)
+    arm("an AMD processor whose config has no kernel patch list still gets the kit's own patches for macOS 27",
+        rc == 0 and len(pl) == 1 and pl[0]["MinKernel"] == "27.0.0" and "1 of the kit's own added for this AMD processor" in out, out)
     rc, out = run("stage", mac1.efi, mkit, *[a for a in MACARGS if a not in ("--disk-free-gb", "110", "--tools", TOOLS)])
     sc = plistlib.load(open(os.path.join(mac1.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if rc == 0 else {"Kernel": {"Add": []}, "NVRAM": {"Add": {}}, "PlatformInfo": {"Generic": {}}}
     lim = {k["BundlePath"]: k.get("MaxKernel", "") for k in sc["Kernel"]["Add"] if k.get("Enabled")}
@@ -491,26 +582,34 @@ with tempfile.TemporaryDirectory() as td:
     rc, out = run("stage", amd3.efi, badkit, *AMDARGS)
     arm("a kit patch with text that would break out of its field is refused and nothing is staged",
         rc == 1 and "a kit kernel patch has a field 1401 will not write" in out and tree(amd3.efi) == b3, out)
-    # The Penryn patch as the community list writes it (clean Base) and as one config writes it (a space after the
-    # name). The kit's list comes from the real patches_27.json, so this ties the tool's mark to the script's mark.
+    # The Penryn patch with its symbol written clean and with a space after the name, as the usual AMD list has it.
+    # OpenCore reads a name of the config with the white space around it removed (OcXmlLib, XmlParseContent), so both
+    # are the same patch: it applies on macOS 26 either way (a Ryzen PC whose config has the space logs it as
+    # "Success"), and it is carried to macOS 27 either way. Left at macOS 26, an AMD processor starts macOS 27
+    # without the patch that names its processor family. The kit's list comes from the real patches_27.json, so this
+    # ties the tool's mark to the script's mark.
     p27 = json.load(open(os.path.join(os.path.dirname(os.path.abspath(kp27.__file__)), "patches_27.json")))
     penryn = [r["mark"] for r in p27["carried"] if "CPUFAMILY_INTEL_PENRYN" in r["comment"]]
     clean = kpatch("penryn clean", bytes.fromhex("803d000000000675"), Base="_cpuid_set_info", Mask=bytes.fromhex("ffff00000000ffff"),
                    mn="20.4.0", Replace=bytes.fromhex("8a0500000000eb00"))
     spaced = dict(clean, Comment="penryn spaced", Base="_cpuid_set_info ")
-    arm("the carried Penryn mark in patches_27.json is the mark of the clean-Base entry, not of the spaced one",
-        penryn == [kp27.mark(clean)] and kp27.mark(spaced) not in [r["mark"] for r in p27["carried"]], penryn)
+    other = dict(clean, Comment="penryn other symbol", Base="_cpuid_set_cpufamily")
+    arm("the carried Penryn mark in patches_27.json is the mark of that patch whether its symbol is written clean or with the space, and not of another symbol",
+        penryn == [kp27.mark(clean)] and kp27.mark(spaced) == kp27.mark(clean) and kp27.mark(other) not in [r["mark"] for r in p27["carried"]], penryn)
+    arm("and the record no longer lists the spaced form as left out", not any("CPUFAMILY_INTEL_PENRYN" in r["comment"] for r in p27["left"]), p27["left"])
     amd4 = fresh(td, "amd-pc-penryn")
     c4 = plistlib.load(open(os.path.join(amd4.efi, "EFI", "OC", "config.plist"), "rb"))
-    c4["Kernel"]["Patch"] = [clean, spaced]
+    c4["Kernel"]["Patch"] = [clean, spaced, other]
     plistlib.dump(c4, open(os.path.join(amd4.efi, "EFI", "OC", "config.plist"), "wb"))
     pkit = mac_kit("kit-amd-penryn", patches_27=[r["mark"] for r in p27["carried"]], patches_27_own=p27["own"])
     rc, out = run("stage", amd4.efi, pkit, *AMDARGS)
     sp4 = {q["Comment"]: q for q in plistlib.load(open(os.path.join(amd4.efi, "EFI", gg.STAGED, "config.plist"), "rb"))["Kernel"]["Patch"]} if rc == 0 else {}
     arm("the script's mark of a clean-Base config matches the carried one: the patch is carried to macOS 27",
         sp4.get("penryn clean", {}).get("MaxKernel") == "27.99.99", out + repr(sp4.get("penryn clean")))
-    arm("and the same patch with the space keeps its macOS 26 limit and is named",
-        sp4.get("penryn spaced", {}).get("MaxKernel") == "25.99.99" and "penryn spaced" in out, out)
+    arm("and the same patch with the space after its symbol is carried too, and its entry in the config is left as it was written",
+        sp4.get("penryn spaced", {}).get("MaxKernel") == "27.99.99" and sp4.get("penryn spaced", {}).get("Base") == "_cpuid_set_info " and "penryn spaced" not in out, out)
+    arm("control: the same bytes from another symbol are another patch: it keeps its macOS 26 limit and is named",
+        sp4.get("penryn other symbol", {}).get("MaxKernel") == "25.99.99" and "penryn other symbol" in out, out)
     pc2 = fresh(td, "pc-after-mac")
     rc, out = run("stage", pc2.efi, mkit, "--gpu-id", "2D05")
     pcc = plistlib.load(open(os.path.join(pc2.efi, "EFI", gg.STAGED, "config.plist"), "rb")) if rc == 0 else {"Kernel": {"Add": []}, "NVRAM": {"Add": {}}, "PlatformInfo": {"Generic": {}}}
@@ -1417,7 +1516,10 @@ echo "$me $mode" >> "@LOG@"
         return f, log
 
     def local(f, *more):
-        args = ["/bin/bash", SCRIPT, "local", "--kit", f.kit_path] + list(more)
+        more = list(more)
+        if "--display" not in more and "--gpu-id" not in more:
+            more += ["--display", ""]          # as in run(): the graphics of the machine the tests run on are no part of this
+        args = ["/bin/bash", SCRIPT, "local", "--kit", f.kit_path] + more
         r = subprocess.run(args, capture_output=True, text=True, timeout=300,
                            env={k: v for k, v in os.environ.items() if k != v3_macos27.KIT_ENV})
         return r.returncode, r.stdout + r.stderr
@@ -1572,13 +1674,54 @@ html = (ROOT / "Resources/index.html").read_text()
 appjs = (ROOT / "Resources/app.js").read_text()
 main = (ROOT / "Sources/main.swift").read_text()
 setup = (ROOT / "Resources/nullmoth-setup.sh").read_text()
+# The one-button run takes an archive of the kit the app found in Downloads. macOS keeps that folder from a program
+# it has not been allowed for, the root shell included: two real runs stopped at their first step with "Operation not
+# permitted". An archive that cannot be read is passed over and the kit is downloaded; one that can be read is used.
+_a = '    if [ -n "${GGKITFILE:-}" ] && ! head -c 1 "$GGKITFILE" >/dev/null 2>&1; then'
+_b = '    [ "$ggkrc" = 0 ] || { echo "RESULT stop"; exit 1; }'
+arm("setup's one-button run has the passage that passes an unreadable archive over", setup.count(_a) == 1 and _b in setup[setup.index(_a):] if _a in setup else False)
+if setup.count(_a) == 1:
+    _blk = setup[setup.index(_a):setup.index(_b, setup.index(_a))]
+    with tempfile.TemporaryDirectory() as _td:
+        _stub = os.path.join(_td, "kit.sh")
+        with open(_stub, "w") as fh:
+            fh.write('#!/bin/bash\necho "KIT $*"\n')
+        _good, _locked = os.path.join(_td, "good.tar.gz"), os.path.join(_td, "locked.tar.gz")
+        for f in (_good, _locked):
+            with open(f, "wb") as fh:
+                fh.write(b"\x1f\x8b")
+        os.chmod(_locked, 0o000)
+
+        def _kit_step(path):
+            r = subprocess.run(["/bin/bash", "-c", f'ggkitlines() {{ cat; }}; GGK="{_stub}"; GGKITFILE="{path}"\n' + _blk + '\necho "rc=$ggkrc"'], capture_output=True, text=True, timeout=30)
+            return r.stdout + r.stderr
+
+        out = _kit_step(_good)
+        arm("an archive setup can read is handed to the kit step", f"KIT get --file {_good}" in out and "NOTE" not in out and "rc=0" in out, out)
+        out = _kit_step(_locked)
+        arm("an archive setup is not allowed to read is passed over with a note, and the kit is downloaded instead of the run stopping",
+            os.getuid() == 0 or ("KIT get\n" in out and "--file" not in out and "could not be read (macOS did not allow it); it is downloaded instead" in out and "rc=0" in out), out)
+        out = _kit_step(os.path.join(_td, "gone.tar.gz"))
+        arm("the same for an archive that is no longer there", "KIT get\n" in out and "--file" not in out and "rc=0" in out, out)
+        out = _kit_step("")
+        arm("control: with no archive named, the kit is downloaded and nothing is said about one", "KIT get\n" in out and "NOTE" not in out, out)
+        os.chmod(_locked, 0o600)
+_main = (ROOT / "Sources/main.swift").read_text()
+arm("the app hands an archive from Downloads to setup only when it could open it itself, which is when macOS asks about that folder",
+    'GoldenGate.readable(local) { extra += ["--v3-kit-file", local] }' in _main and 'fileExists(atPath: local) { extra += ["--v3-kit-file"' not in _main
+    and "NSDownloadsFolderUsageDescription" in (ROOT / "build.sh").read_text())
 arm("the card is hidden in the page as shipped and every button on it starts disabled",
     '<div class="pane card" id="ggcard" hidden>' in html
     and all(f'id="{b}" disabled' in html for b in ("ggprep", "gginst", "ggact", "ggfin", "ggcancel")))
 arm("the page shows the card only when the app reports a kit, and enables it only on macOS 15 or 26",
-    '$("ggcard").hidden = !m.goldenGate;' in appjs and "S.ggReady = !!m.goldenGate && OS_FROM.includes(m.major) && !why;" in appjs
+    '$("ggcard").hidden = !m.goldenGate;' in appjs and "S.ggReady = !!m.goldenGate && OS_FROM.includes(m.major) && !ggWhy;" in appjs
     and re.search(r"^const OS_FROM = \[15, 26\][,;]", appjs, re.M) is not None)   # the two versions live in one named list since the page became Liberator's own
 arm("the page script still never names macOS 27", "macOS 27" not in appjs)
+arm("a Mac that lacks only an NVIDIA card keeps the Golden Gate buttons when it has AMD or Intel graphics, and one whose card is merely hidden does not",
+    'const other = m.gpus.find((g) => g.vendor === "1002") || m.gpus.find((g) => g.vendor === "8086");' in appjs
+    and "const otherOnly = (!card || !card.supported) && !hidden && !!other" in appjs and "const ggWhy = !otherOnly ? why :" in appjs
+    and all(k in html for k in ("data-ready-other=", "data-other-how=", "data-other-no-oc=", "data-other-on27="))
+    and 'data-need="Needs OpenCore and a supported NVIDIA card, or AMD or Intel graphics."' in html)
 _sh = open(SCRIPT).read().splitlines()
 _bless = [i for i, ln in enumerate(_sh) if "/usr/sbin/bless " in ln and not ln.lstrip().startswith("#")]
 arm("the system's own bless is only ever reached as root with the system's own disk tool, so no test run can start it (one waited for ever)",

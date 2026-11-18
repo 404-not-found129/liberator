@@ -33,11 +33,22 @@ function render(m) {
   else if (!card || !card.supported) why = "No supported NVIDIA card was found. The driver needs a GeForce RTX 20 series or newer.";
   else if (!m.opencore && !m.nativeMacPro) why = "This Mac does not report OpenCore. The driver's settings live in OpenCore's config, so Liberator will not work without it.";
 
+  // Golden Gate does not need an NVIDIA card: the kit also carries a driver for AMD and Intel graphics, and the check
+  // at the start of the move (nullmoth-golden-gate.sh preflight) decides whether this Mac's chip and startup files can
+  // be used. So a Mac that is turned away above for its missing NVIDIA card alone, and that has AMD or Intel graphics,
+  // keeps the Golden Gate buttons; only what stops the move itself still stops it. (Its sentences are in the page.)
+  // A Mac whose NVIDIA card is only hidden or switched off is not one of these: it is told how to get the card back.
+  const other = m.gpus.find((g) => g.vendor === "1002") || m.gpus.find((g) => g.vendor === "8086");
+  const hidden = (m.gpuHiding || []).some((a) => a !== "-wegnoigpu") || (m.hiddenNvidia || []).length > 0;
+  const otherOnly = (!card || !card.supported) && !hidden && !!other && m.arch === "x86_64" && !m.translated && OS_OK.includes(m.major);
+  const ggWhy = !otherOnly ? why : !m.opencore && !m.nativeMacPro ? esc(V.otherNoOc) : "";
+  const maker = other && other.vendor === "1002" ? "AMD" : "Intel";
+
   // Keep the checked package available when the driver is already running.
   const pk = m.packages.find((p) => p.ok === "yes"); if (pk) S.pkg = pk.path;
   // Golden Gate: the card exists only when this build carries a kit pin; its steps run only from the starting systems
   $("ggcard").hidden = !m.goldenGate;
-  S.ggReady = !!m.goldenGate && OS_FROM.includes(m.major) && !why;
+  S.ggReady = !!m.goldenGate && OS_FROM.includes(m.major) && !ggWhy;
   S.ggKit = m.ggKit || "none";
   const kept = $("ggkept"), mb = Number(m.ggKeptMB) || 0;
   kept.textContent = mb > 0 ? kept.dataset.kept.replace("{n}", (mb / 1000).toFixed(1)) : kept.dataset.none;
@@ -47,6 +58,14 @@ function render(m) {
   $("ggkitr").textContent = S.ggKit === "current" ? $("ggkitr").dataset.current : S.ggKit === "other" ? $("ggkitr").dataset.other : "";
   if (m.goldenGate && !S.ggReady && !$("ggt").textContent) $("ggt").textContent = OS_FROM.includes(m.major) ? $("ggt").dataset.need : $("ggt").dataset.from;
   $("steps").hidden = true;
+  // AMD or Intel graphics and no NVIDIA card: nothing of the NVIDIA driver applies (its steps stay hidden), and the
+  // verdict says what the move means on this chip instead of turning the Mac away.
+  if (otherOnly) {
+    if (ggWhy) { $("verdict").innerHTML = `<p class="bad">Liberator can't be used here.</p><p>${ggWhy}</p>`; return; }
+    if (OS_FROM.includes(m.major)) $("verdict").innerHTML = `<p class="good">${esc(V.readyOther.replace("{maker}", maker))}</p><p class="warn">${esc(V.otherHow)}</p>`;
+    else $("verdict").innerHTML = `<p class="good">${esc(V.otherOn27.replace("{maker}", maker))}</p>`;
+    return;
+  }
   if (why) { $("verdict").innerHTML = `<p class="bad">Liberator can't be used here.</p><p>${why}</p>`; return; }
   // On a starting system the driver there belongs to the other app; this one only makes the move.
   if (OS_FROM.includes(m.major)) {
@@ -80,7 +99,14 @@ function logLine(l) {
   $("log").insertAdjacentHTML("beforeend", (cls ? `<span class="${cls}">${txt}</span>` : txt) + "\n");
   $("log").scrollTop = $("log").scrollHeight;
   const m = l.match(/^NOTE candidate (\S+)/);
-  if (m) { $("efirow").hidden = false; if (![...$("efi").options].some((o) => o.value === m[1])) $("efi").insertAdjacentHTML("beforeend", `<option value="${esc(m[1])}">${esc(m[1])}</option>`); }
+  // The choice is its own card and is brought into view: as one plain line between two cards it was not seen, and a
+  // run that stopped for it looked as if nothing could be done.
+  if (m) {
+    const first = $("efirow").hidden;
+    $("efirow").hidden = false;
+    if (![...$("efi").options].some((o) => o.value === m[1])) $("efi").insertAdjacentHTML("beforeend", `<option value="${esc(m[1])}">${esc(m[1])}</option>`);
+    if (first && $("efirow").scrollIntoView) $("efirow").scrollIntoView({ block: "center" });
+  }
 }
 
 const NM = {
@@ -150,6 +176,7 @@ const NM = {
       if (data.mode === "install" && data.ok) { S.installed = true; step(3, "done"); step(4, "now"); $("rs").disabled = false; }
       if (data.mode === "goldengate" && data.ok && !$("ggbar").hidden) ggBar(100, "100%  Done");
       if (data.mode === "goldengate") $("ggt").textContent = data.ok ? GG_DONE[S.ggStep] || (S.ggStep === "kit" ? $("ggkit").dataset.done : S.ggStep === "all" ? $("ggprep").dataset.done : "Done.") : "Stopped. Review the setup log above.";
+      if (data.mode === "goldengate" && !data.ok && !$("efirow").hidden && efi() !== "auto" && S.efiAsked !== true) { S.efiAsked = true; $("ggt").textContent = $("ggt").dataset.pick; }
       post({ act: "scan" });
     }
   },

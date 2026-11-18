@@ -1,5 +1,18 @@
 # Changelog
 
+## Not released: AMD and Intel graphics without an NVIDIA card
+- A PC whose Radeon card runs on Apple's own driver under macOS 15 or 26 (RX 400/500, Vega, RX 5000, RX 6000) is set up for macOS 27 on NullMoth's test driver for AMD graphics, like every other Radeon. Before, the check passed such a PC and the last step refused it, after macOS 27 had been downloaded and laid down: it was sent down the path that carries a real Mac's own drivers over, and a PC's macOS does not have those as files. The check now says that macOS 27 starts without graphics acceleration on that card. The same holds for a PC's Intel graphics. Real Macs are unchanged.
+- The test driver leaves a chip on its own list of chips Apple's drivers run to Apple's driver (71 Radeon IDs in the Beta 3 kit's NMXGPU, the RX 470-590 among them) unless boot argument nmxamd_native or nmxintel_native is not 0. A PC on the test path is now given that argument for each maker it has a chip of, because its macOS 27 has no Apple driver: without it the driver would never take such a card, and macOS 27 would wait five minutes for a framebuffer that does not come. A real Mac is not given it.
+- On AMD or Intel graphics, a PC's own OpenCore startup files are accepted (a whole OpenCore config that loads VirtualSMC or FakeSMC). With an NVIDIA card the driver takes, startup files must still be 1401's.
+- The app no longer says "Liberator can't be used here" on a Mac that has AMD or Intel graphics and no NVIDIA card: the Golden Gate buttons work, and the page says what the move means on that chip. A Mac whose NVIDIA card is only hidden or switched off is still told how to get it back.
+- AMD processors: the kernel patch that names the processor family ("Force CPUFAMILY_INTEL_PENRYN") is carried to macOS 27. The usual AMD list writes its symbol as "_cpuid_set_info " with a space after it. OpenCore reads a name of the config with the white space around it removed and applies the patch (a Ryzen PC's own OpenCore log says Success on macOS 15 and 26), but the check compared the name with the space, found no match with the kit's checked patch, and left it at macOS 26: macOS 27 would have started on an AMD processor without it. The check and the kit's maker now read the two names of a patch the way OpenCore does.
+- AMD processors: a config with no kernel patch list at all no longer stops the staging with "could not add the kit's kernel patch".
+- An archive of the kit lying in Downloads no longer stops the one-button run. macOS keeps the Downloads folder from a program it has not been allowed for, the root shell that runs setup included, so the run stopped at its first step with "Operation not permitted" (two runs on one PC). The app now opens the archive itself first, which is when macOS asks about the folder in Liberator's name, and hands it over only if it could; setup passes an archive it cannot read over and downloads the kit instead.
+- When two partitions hold the same OpenCore (an internal disk and the stick it was copied from), setup takes the one that holds OpenCore's own log of this start, when only one does. The choice the app offers otherwise is now a panel of its own that is brought into view; as one plain line between two panels it was not seen.
+- The check names several display devices in one line.
+- Tests no longer depend on the processor and graphics of the machine they run on.
+- Untried on real hardware.
+
 ## Liberator Beta 3
 - Version 0.3.0, built for its own kit (release tag v3.0.0-beta.3).
 - macOS 27 now runs the 3.0 NVIDIA driver, the same driver generation as the 3.0 release for macOS 15 and 26, built for macOS 27.
