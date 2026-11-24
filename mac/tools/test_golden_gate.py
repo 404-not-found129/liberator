@@ -1738,10 +1738,10 @@ echo "$me $mode" >> "@LOG@"
         < script.index('KIT="$PRIV/kit"') < script.index("  kit_ok || stop \"$NOT_OFFERED Nothing was changed\"\n  kit_allowed"))
     kit_runs = (script.count('/bin/bash "$PAY/$inst"') + script.count('/bin/bash "$SPAY/$sinst"') + script.count('/bin/bash "$LDIR/$linst"')
                 + script.count('run_kit "$LDIR/$linst"') + script.count('run_kit "$KM"') + script.count('run_kit "$LDIR/make-kernel-collections.sh"'))
-    arm("every kit script is run from the private copy and never from the startup partition: four runs in finish, four in local, and the lay-down and the collections maker through one helper",
-        '"$ROOT/$DRIVER/$inst"' not in script and script.count('/bin/bash "$PAY/$inst"') == 4 and script.count('/bin/bash "$SPAY/$sinst"') == 4
-        and script.count('/bin/bash "$LDIR/$linst"') == 1 and script.count('/bin/bash "$@"') == 1 and script.count("/bin/bash ") == 10
-        and script.count('SPAY="$KIT/$sdir"') == 1 and script.count('PAY="$KIT/$ddir"') == 1 and script.count('LDIR="$KIT/$d"') == 1 and kit_runs == 14, kit_runs)
+    arm("every kit script is run from the private copy and never from the startup partition: four runs in finish, four in local, three for the accelerator, and the lay-down and the collections maker through one helper",
+        '"$ROOT/$DRIVER/$inst"' not in script and script.count('/bin/bash "$PAY/$inst"') == 7 and script.count('/bin/bash "$SPAY/$sinst"') == 4
+        and script.count('/bin/bash "$LDIR/$linst"') == 1 and script.count('/bin/bash "$@"') == 1 and script.count("/bin/bash ") == 13
+        and script.count('SPAY="$KIT/$sdir"') == 1 and script.count('PAY="$KIT/$ddir"') == 1 and script.count('LDIR="$KIT/$d"') == 1 and kit_runs == 17, kit_runs)
     arm("the private copy is checked again right before each of those runs once the step has started changing things",
         script.count('tree_trusted "$KIT" || stop "the private copy of the v3 kit changed') >= 12)
     fin = script[script.index("\nfinish)"):script.index("\nlocal)")]
@@ -1845,10 +1845,11 @@ confirms = [i for i in range(len(main)) if main.startswith('extra.append("--conf
 rm_q = main.index('a.messageText = "Remove macOS 27 from this Mac?"')
 clr_q = main.index('a.messageText = "Clear the Golden Gate downloads?"')
 drv_q = main.index('a.messageText = off ? "Turn off the unproven drivers for macOS 27?"')
+acc_q = main.index('a.messageText = on ? "Turn on graphics acceleration for macOS 27?"')
 GUARD = "guard a.runModal() == .alertSecondButtonReturn else"
-arm("--confirm is passed only after the user's yes: the whole move, removing macOS 27, clearing the downloads, the drivers switch, the single switch",
-    main.count('"--confirm"') == 5 and len(confirms) == 5 and one < confirms[0] < rm_q < confirms[1] < clr_q < confirms[2] < drv_q < confirms[3] < single < confirms[4]
-    and all(GUARD in main[q:c] for q, c in ((one, confirms[0]), (rm_q, confirms[1]), (clr_q, confirms[2]), (drv_q, confirms[3]), (single, confirms[4]))))
+arm("--confirm is passed only after the user's yes: the whole move, removing macOS 27, clearing the downloads, the accelerator switch, the drivers switch, the single switch",
+    main.count('"--confirm"') == 6 and len(confirms) == 6 and one < confirms[0] < rm_q < confirms[1] < clr_q < confirms[2] < acc_q < confirms[3] < drv_q < confirms[4] < single < confirms[5]
+    and all(GUARD in main[q:c] for q, c in ((one, confirms[0]), (rm_q, confirms[1]), (clr_q, confirms[2]), (acc_q, confirms[3]), (drv_q, confirms[4]), (single, confirms[5]))))
 arm("the question before removing macOS 27 says that everything inside it is erased, that it cannot be undone, and that the running macOS is not touched",
     all(w in main[rm_q:confirms[1]] for w in ("with everything saved inside it", "It cannot be undone", "The macOS you are using now is not touched")))
 osgate = (ROOT / "Sources/OSGate.swift").read_text()

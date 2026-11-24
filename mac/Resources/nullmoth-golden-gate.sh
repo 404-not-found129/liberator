@@ -1256,10 +1256,10 @@ preflight)
   fi
   if ST=$(read_state) && layout_ok "$ST"; then check 0 "Golden Gate state: $ST"; else check 1 "the startup partition matches its Golden Gate record"; fi
   # asked only where macOS 27 still has to be laid down: a system that is already on its volumes needs no Preboot write
-  if ! mac27_laid_down; then
-    if sip_fs_ok; then check 0 "System Integrity Protection lets the install write this disk's Preboot volume"
-    else check 1 "System Integrity Protection lets the install write this disk's Preboot volume"; SIPHELP=1; fi
-  fi
+  # (the volumes are asked about only when the protection is on, so that a check that passes mounts nothing more)
+  if sip_fs_ok; then check 0 "System Integrity Protection lets the install write this disk's Preboot volume"
+  elif mac27_laid_down; then check 0 "System Integrity Protection is on, and macOS 27 is already on its volumes, so nothing more is written to Preboot"
+  else check 1 "System Integrity Protection lets the install write this disk's Preboot volume"; SIPHELP=1; fi
   [ -z "$ESPHELP" ] || note "$ESPHELP"
   [ -z "${SIPHELP:-}" ] || note "$SIP_FIX"
   [ $fails = 0 ] || stop "$fails check(s) failed. Nothing was changed"
