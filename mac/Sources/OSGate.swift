@@ -90,7 +90,7 @@ enum GoldenGate {
     /// "drivers-off" turns off, for macOS 27 only, every driver of this PC that is on there without having been
     /// proven there: the way back into macOS 27 after a start that did not reach the desktop. "drivers-on" takes
     /// that back. Both need the kit (it says which drivers those are) and both are asked about first.
-    static let steps: Set<String> = forwardSteps.union(["cancel", "kit", "all", "remove", "clear-downloads"]).union(["drivers-off", "drivers-on"])
+    static let steps: Set<String> = forwardSteps.union(["cancel", "kit", "all", "remove", "clear-downloads"]).union(["drivers-off", "drivers-on"]).union(["accel-on", "accel-off"])
     /// Where the script writes how much is kept downloaded ("bytes N"). The folders themselves are root's alone, so
     /// this figure is all the app can read; it is shown and nothing is decided from it.
     /// The sizes the page offers for macOS 27, in GB; 0 is no limit. Anything else from the page is not passed on.
@@ -145,6 +145,7 @@ enum GoldenGate {
         if (step == "kit" || step == "all") && kitState == "none" { return "macOS 27 is not offered by this build of 1401." }
         if forwardSteps.contains(step) && !kit.isEmpty && kitState != "current" { return "Get macOS 27 support first: the kit on this Mac is not the one this build of 1401 uses." }
         if forwardSteps.contains(step) && kit.isEmpty { return "macOS 27 is not offered by this build of 1401." }
+        if (step == "accel-on" || step == "accel-off") && kit.isEmpty { return "Get macOS 27 support first: the accelerator is part of it." }
         if (step == "drivers-off" || step == "drivers-on") && kit.isEmpty { return "Get macOS 27 support first: it says which drivers these are." }
         if !fromMajors.contains(major) { return "Golden Gate runs from macOS 15 or 26; this Mac runs macOS \(major)." }
         return nil

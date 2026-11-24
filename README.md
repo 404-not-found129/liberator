@@ -67,6 +67,12 @@ graphics chip and sets macOS 27 up on that one instead:
   after the name) counts as the checked patch it is. Staged from one Ryzen PC's real config, 13 patches are
   carried, 1 is replaced by the kit's own two, and 1 (IOPCIFamily, 10 bit tags) stays at macOS 26.
 
+- **Acceleration, as a second step.** After macOS 27 has reached its desktop once, start macOS 15 or 26 again and
+  press **Turn on graphics acceleration**. It adds the kit's accelerator (NMXAccel, with the Radeon or Intel Vulkan
+  driver behind the Metal plugin) to macOS 27 and switches it on with the boot argument `nmxfb_pipe=1`. The kit's
+  start-up gate goes back to the software desktop when the accelerated display cannot be armed. **Turn it off**
+  takes it back. System Integrity Protection must be lowered on the macOS you start from; the check says so.
+
 None of this has been run on real hardware. Your current macOS and its startup files are kept, and
 **Cancel Golden Gate** puts them back.
 

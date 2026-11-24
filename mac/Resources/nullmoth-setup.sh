@@ -97,8 +97,8 @@ if [ -n "${GG:-}" ]; then
     [ "$ggkrc" = 0 ] || { echo "RESULT stop"; exit 1; }
     GGKIT=/Library/NullMoth/v3-kit
   fi
-  case "$GG" in all|prepare|activate|installer|collections|finish|drivers-off|drivers-on) [ -f "${GGKIT:-}/v3-kit.json" ] || { echo "STOP macOS 27 is not offered by this build of 1401. Nothing was changed"; echo "RESULT stop"; exit 1; };;
-    cancel|remove|downloads|clear-downloads) ;; *) echo "STOP --golden-gate takes all, kit, prepare, activate, installer, collections, finish, cancel, remove, downloads, clear-downloads, drivers-off or drivers-on"; echo "RESULT stop"; exit 2;; esac
+  case "$GG" in all|prepare|activate|installer|collections|finish|drivers-off|drivers-on|accel-on|accel-off) [ -f "${GGKIT:-}/v3-kit.json" ] || { echo "STOP macOS 27 is not offered by this build of 1401. Nothing was changed"; echo "RESULT stop"; exit 1; };;
+    cancel|remove|downloads|clear-downloads) ;; *) echo "STOP --golden-gate takes all, kit, prepare, activate, installer, collections, finish, cancel, remove, downloads, clear-downloads, drivers-off, drivers-on, accel-on or accel-off"; echo "RESULT stop"; exit 2;; esac
   [ -z "${GGSIZE:-}" ] || printf '%s' "$GGSIZE" | grep -Eq '^[0-9]{2,4}$' || { echo "STOP --gg-size takes a whole number of GB. Nothing was changed"; echo "RESULT stop"; exit 2; }
   GGMAJ=$(sw_vers -productVersion 2>/dev/null); GGMAJ=${GGMAJ%%.*}
   case "$GGMAJ" in 15|26) ;; *) echo "STOP Golden Gate runs from macOS 15 or 26; this Mac runs macOS ${GGMAJ:-?}. Nothing was changed"; echo "RESULT stop"; exit 1;; esac
@@ -1593,6 +1593,7 @@ if [ -n "${GG:-}" ]; then
   # The way back into macOS 27 after a start that did not reach the desktop: every driver that is on there without
   # having been proven there is turned off (it still loads on this macOS); drivers-on takes those choices back.
   elif [ "$GG" = drivers-off ]; then /bin/bash "$GGS" drivers --root "$MP" ${GGKIT:+--kit "$GGKIT"} --off unproven ${GGCONFIRM:+--confirm}; ggrc=$?
+  elif [ "$GG" = accel-on ] || [ "$GG" = accel-off ]; then /bin/bash "$GGS" "$GG" --root "$MP" ${GGKIT:+--kit "$GGKIT"} ${GGCONFIRM:+--confirm}; ggrc=$?
   elif [ "$GG" = drivers-on ]; then /bin/bash "$GGS" drivers --root "$MP" ${GGKIT:+--kit "$GGKIT"} --on all ${GGCONFIRM:+--confirm}; ggrc=$?
   else gg "$GG"; ggrc=$?; fi
   cleanup; [ $ggrc = 0 ] && { echo "RESULT ok"; exit 0; }; echo "RESULT stop"; exit 1

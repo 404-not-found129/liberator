@@ -100,6 +100,8 @@ def run(step, root, kit="", *more):
         flat += ["--cpu-vendor", "GenuineIntel"]
     if "--display" not in flat and "--gpu-id" not in flat:
         flat += ["--display", ""]
+    if "--sip" not in flat:
+        flat += ["--sip", "off"]               # and System Integrity Protection lowered, as on the PCs this was made on
     args = ["/bin/bash", SCRIPT, step, "--root", root] + (["--kit", kit] if kit else []) + flat
     env = {k: v for k, v in os.environ.items() if k != v3_macos27.KIT_ENV}
     r = subprocess.run(args, capture_output=True, text=True, timeout=300, env=env)
@@ -159,6 +161,14 @@ with tempfile.TemporaryDirectory() as td:
         rc, out = run("preflight", fx.efi, fx.kit_path, *args)
         arm(f"preflight refuses {name} and names it", rc == 1 and word in out and out.count("FAIL ") == 1, out)
 
+    rc, out = run("preflight", fx.efi, fx.kit_path, *READY, "--sip", "on")
+    arm("with System Integrity Protection on, the check refuses before anything is downloaded, and says how to turn it off",
+        rc == 1 and out.count("FAIL ") == 1 and "FAIL System Integrity Protection lets the install write this disk's Preboot volume" in out
+        and "csr-active-config" in out and "csrutil disable" in out and tree(fx.efi) == before, out)
+    rc, out = run("installer", fx.efi, fx.kit_path, *READY, "--sip", "on")
+    arm("and the install step refuses the same way, for a run that passes the check over", rc == 1 and "System Integrity Protection is on" in out and "Nothing was changed" in out, out)
+    rc, out = run("preflight", fx.efi, fx.kit_path, *READY, "--sip", "off")
+    arm("control: lowered, the check passes it by name", rc == 0 and "OK System Integrity Protection lets the install write this disk's Preboot volume" in out, out)
     # 2a2. the startup partition is small. A refusal says which partition is meant; old OpenCore start-up logs are
     # the one thing staging removes to make room, and the three newest stay.
     esp = fresh(td, "esp-room")
@@ -819,6 +829,86 @@ echo "$me $mode $pay" >> "$data/Library/calls.log"
             return [ln.split() for ln in open(os.path.join(vols, "New0 - Data", "Library", "calls.log")).read().splitlines()]
         except OSError:
             return []
+
+    # Graphics acceleration on the AMD/Intel test path is a step of its own, for after macOS 27 has reached its desktop
+    # once: the kit's installer run again with --accel, the Vulkan loader the Metal plugin opens first (only the NVIDIA
+    # package installs it), and the boot argument nmxfb_pipe=1. accel-off takes all three back.
+    def accel_fixture(name, set_up=True):
+        f = fresh(td, name)
+        os.remove(os.path.join(f.efi, ".1401-build"))               # a PC's own OpenCore files, on a Radeon
+        v = volumes(name + "-vols")
+        data = os.path.join(v, "New0 - Data")
+        inst = """#!/bin/bash
+# stands in for the kit's install-igpu.sh: writes down how it was called, and places what the real one places
+D=""; A=0; M=""; while [ $# -gt 0 ]; do case "$1" in --data) D=$2; shift;; --accel) A=1;; --dry-run|--apply) M=$1;; --payload|--system|--esp) shift;; esac; shift; done
+echo "igpu $M accel=$A" >> "$D/Library/calls.log"
+[ "$M" = --apply ] || exit 0
+mkdir -p "$D/Library/NullMoth/golden-gate/igpu"; touch "$D/Library/NullMoth/golden-gate/igpu/added.list"
+[ $A = 0 ] || { mkdir -p "$D/Library/GPUBundles/nvmtl"; echo radv > "$D/Library/GPUBundles/nvmtl/libvulkan_radeon.dylib"; }
+exit ${IGPU_RC:-0}
+"""
+        for key, script in (("driver_test", inst), ("driver", "#!/bin/bash\nexit 0\n"), ("system", "#!/bin/bash\nexit 0\n")):
+            os.makedirs(os.path.join(f.kit_path, key), exist_ok=True)
+            with open(os.path.join(f.kit_path, key, "install.sh"), "w") as fh:
+                fh.write(script)
+        nv = os.path.join(f.kit_path, "driver", "payload", "Library", "GPUBundles", "nvmtl"); os.makedirs(nv)
+        for n in ("libvulkan.1.4.300.dylib", "libvulkan.1.4.362.dylib"):
+            with open(os.path.join(nv, n), "w") as fh:
+                fh.write("loader " + n)
+        mp = os.path.join(f.kit_path, v3_macos27.MANIFEST); m = json.load(open(mp))
+        m.update({"graphics": ["nvidia", "test"], "only": {"test": ["nmxamd=3"]}, "boot_args": m["boot_args"] + ["nmxamd=3"]})
+        for key in ("driver_test", "driver", "system"):
+            m[key] = {"dir": key, "installer": "install.sh"}
+        json.dump(m, open(mp, "w"))
+        hw = ["--macos-major", "26", "--display", "1002:67DF", "--apple-id", "1002:67DF", "--cpu-vendor", "GenuineIntel", "--laptop", "no"]
+        rc, out = run("stage", f.efi, f.kit_path, *hw)
+        assert rc == 0, out
+        if set_up:
+            os.makedirs(os.path.join(data, "Library", "NullMoth", "golden-gate", "igpu"))
+            open(os.path.join(data, "Library", "NullMoth", "golden-gate", "igpu", "added.list"), "w").close()
+        return f, v, data, hw
+
+    def args27(f, folder=None):
+        c = plistlib.load(open(os.path.join(f.efi, "EFI", folder or gg.STAGED, "config.plist"), "rb"))
+        return " " + " ".join(x.get("boot-args", "") for x in c["NVRAM"]["Add"].values() if isinstance(x, dict)) + " "
+
+    f, v, data, hw = accel_fixture("accel")
+    nvmtl = os.path.join(data, "Library", "GPUBundles", "nvmtl")
+    before = tree(f.efi)
+    rc, out = run("accel-on", f.efi, f.kit_path, *hw, v)
+    arm("accel-on without confirmation changes nothing", rc == 1 and "only when you confirm" in out and tree(f.efi) == before and calls(v) == [], out)
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", *hw, v)
+    arm("accel-on runs the AMD/Intel installer's dry run and then its real run, both with the accelerator",
+        rc == 0 and calls(v) == [["igpu", "--dry-run", "accel=1"], ["igpu", "--apply", "accel=1"]], out + repr(calls(v)))
+    arm("it places the kit's newest Vulkan loader under the two names the Metal plugin opens",
+        open(os.path.join(nvmtl, "libvulkan.dylib")).read() == "loader libvulkan.1.4.362.dylib"
+        and os.readlink(os.path.join(nvmtl, "libvulkan.dylib")) == "libvulkan.1.dylib" and os.readlink(os.path.join(nvmtl, "libvulkan.1.dylib")) == "libvulkan.1.4.362.dylib", out)
+    arm("and adds nmxfb_pipe=1 to the macOS 27 startup files, once, leaving the macOS 26 ones alone",
+        args27(f).count(" nmxfb_pipe=1 ") == 1 and " nmxamd=3 " in args27(f) and "nmxfb_pipe" not in args27(f, "OC") and "graphics acceleration is on for macOS 27" in out, out + args27(f))
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", *hw, v)
+    arm("a second accel-on leaves the argument there once", rc == 0 and args27(f).count(" nmxfb_pipe=1 ") == 1, out + args27(f))
+    rc, out = run("accel-off", f.efi, f.kit_path, "--confirm", *hw, v)
+    arm("accel-off takes the argument out, links the collection again without the accelerator, and removes the loader it placed",
+        rc == 0 and "nmxfb_pipe" not in args27(f) and calls(v)[-1] == ["igpu", "--apply", "accel=0"]
+        and not any(n.startswith("libvulkan.") for n in os.listdir(nvmtl)) and os.path.exists(os.path.join(nvmtl, "libvulkan_radeon.dylib")), out + repr(os.listdir(nvmtl)))
+    f, v, data, hw = accel_fixture("accel-early", set_up=False)
+    before = tree(f.efi)
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", *hw, v)
+    arm("accel-on before macOS 27 was set up on the driver is refused: the first start is without the accelerator",
+        rc == 1 and "start macOS 27 once first" in out and tree(f.efi) == before and calls(v) == [], out)
+    f, v, data, hw = accel_fixture("accel-nvidia")
+    before = tree(f.efi)
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", "--macos-major", "26", "--gpu-id", "2D05", "--cpu-vendor", "GenuineIntel", v)
+    arm("accel-on on an NVIDIA PC is refused: that path has its own accelerator", rc == 1 and "NVIDIA path" in out.replace("nvidia path", "NVIDIA path") and tree(f.efi) == before, out)
+    f, v, data, hw = accel_fixture("accel-fails")
+    os.environ["IGPU_RC"] = "1"
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", *hw, v)
+    del os.environ["IGPU_RC"]
+    arm("when the installer's real run stops, the startup files are not given the argument",
+        rc == 1 and "nmxfb_pipe" not in args27(f) and "The startup files were not changed" in out, out + args27(f))
+    f, v, data, hw = accel_fixture("accel-27")
+    rc, out = run("accel-on", f.efi, f.kit_path, "--confirm", *[("27" if a == "26" else a) for a in hw], v)
+    arm("accel-on from macOS 27 itself is refused", rc == 1 and "from macOS 15 or 26" in out, out)
 
     def active(name, system=True, driver=True):
         f = fresh(td, name)

@@ -616,6 +616,17 @@ final class App: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDe
                 guard a.runModal() == .alertSecondButtonReturn else { send("run", ["state": "cancelled", "mode": "goldengate"]); break }
                 extra.append("--confirm")
             }
+            if step == "accel-on" || step == "accel-off" {
+                let on = step == "accel-on"
+                let a = NSAlert()
+                a.messageText = on ? "Turn on graphics acceleration for macOS 27?" : "Turn graphics acceleration off for macOS 27?"
+                a.informativeText = on
+                    ? "Do this only after macOS 27 has reached its desktop once. It adds the accelerator for AMD and Intel graphics to macOS 27 and switches it on at the next start. It is untried on real hardware. If macOS 27 then does not reach its desktop, start this macOS and turn it off here again."
+                    : "This switches the accelerator off for macOS 27. Its desktop is drawn in software again at the next start, as it was after the first set-up."
+                a.addButton(withTitle: "Cancel"); a.addButton(withTitle: on ? "Turn it on" : "Turn it off")
+                guard a.runModal() == .alertSecondButtonReturn else { send("run", ["state": "cancelled", "mode": "goldengate"]); break }
+                extra.append("--confirm")
+            }
             if step == "drivers-off" || step == "drivers-on" {
                 let off = step == "drivers-off"
                 let a = NSAlert()

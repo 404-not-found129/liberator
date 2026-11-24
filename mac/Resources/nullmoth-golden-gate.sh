@@ -88,6 +88,7 @@ ROOT=""; KIT=""; CONFIRM=0; DRVOFF=""; DRVON=""; MAJOR=""; GPUS=""; GPUS_GIVEN=0
 PCITREE=""; DISPLAYS=""; DISPLAYS_GIVEN=0; APPLEIDS=""; APPLEIDS_GIVEN=0
 DISKUTIL=/usr/sbin/diskutil; TOOLS=""
 KITMODEL=0; CPUV=""; LAPTOP=""; ACCOUNT=""
+SIPGIVEN=""
 REPORT=""; KITTAG=""   # --report yes|no: the owner's answer about start reports from macOS 27; --kit-tag: the kit's release
 # Every step's lines also go to one log on this macOS: a step that stopped can be read afterwards, Send logs takes
 # it, and the app shows its last line while a long step runs. Kept under 1 MB: past that the older half is dropped.
@@ -103,6 +104,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --disk-free-gb) DISK_GB=${2:-}; shift;; --esp-free-kb) ESPFREE=${2:-}; shift;; --device-id) DEVIDS="$DEVIDS ${2:-}"; DEVIDS_GIVEN=1; shift;;
   --diskutil) DISKUTIL=${2:-}; shift;; --tools) TOOLS=${2:-}; shift;; --kc-work) KCWORK=${2:-}; shift;; --lay-work) LAYWORK=${2:-}; shift;; --preboot) PREBOOT=${2:-}; shift;; --step-log) STEPLOG=${2:-}; shift;;
   --cpu-vendor) CPUV=${2:-}; shift;; --laptop) LAPTOP=${2:-}; shift;; --model) MODELGIVEN=${2:-}; shift;;
+  --sip) SIPGIVEN=${2:-}; shift;;
   --display) DISPLAYS="$DISPLAYS ${2:-}"; DISPLAYS_GIVEN=1; shift;; --apple-id) APPLEIDS="$APPLEIDS ${2:-}"; APPLEIDS_GIVEN=1; shift;;
   # test-hook-end
   *) echo "STOP unknown option $1"; echo "RESULT stop"; exit 2;; esac; shift; done
@@ -195,6 +197,20 @@ chain_trusted() {  # $1 and every folder above it, up to /
     [ "$d" = / ] && break; d=$(dirname "$d"); done
 }
 upper() { printf '%s' "$1" | tr '[:lower:]' '[:upper:]'; }
+# Laying macOS 27 down adds a folder for the new system to this disk's Preboot volume, and System Integrity Protection
+# refuses that to every program but Apple's own, root included ("mkdir: /System/Volumes/Preboot/<id>: Operation not
+# permitted"). An NVIDIA PC comes here with it already lowered (the driver's setup does that); a PC on AMD or Intel
+# graphics may have it fully on. The first such PC found out at the very end of the lay-down, after the 26 GB download,
+# the unpacking and the copy, and the volumes it had made were removed again. So it is asked before anything is
+# downloaded. Lowered means off, or a custom setting whose file system protection is off.
+SIP_FIX="System Integrity Protection is on, and it does not let the install add macOS 27's folder to this disk's Preboot volume. Turn it off for this macOS first: in OpenCore's config.plist set NVRAM > Add > 7C436110-AB2A-4BBB-A880-FE41995C9F82 > csr-active-config to the data value FF0F0000 (the value the macOS 27 startup files use anyway), make sure csr-active-config is listed under NVRAM > Delete for the same identifier, and restart. Or start Recovery, open Terminal and run: csrutil disable"
+sip_fs_ok() {
+  local s
+  case "$SIPGIVEN" in off) return 0;; on) return 1;; esac
+  s=$(csrutil status 2>/dev/null)
+  case "$s" in *"status: disabled"*) return 0;; esac
+  printf '%s\n' "$s" | grep -Eqi 'Filesystem Protections: *disabled'
+}
 
 NOT_OFFERED="macOS 27 is not offered by this build of 1401. It needs the NullMoth v3 kit, which is not public."
 kv() { plutil -extract "$1" raw -o - "$KIT/$MANIFEST" 2>/dev/null; }      # one value of the kit's manifest
@@ -216,8 +232,8 @@ kit_ok() {
   [ $seen = 1 ]
 }
 
-case "$STEP" in preflight|stage|activate|rollback|cancel|installer|collections|finish|local|status|laid|kit-current|refresh|drivers|downloads|clear-downloads|remove) ;;
-  *) echo "STOP the step must be preflight, stage, activate, rollback, cancel, installer, collections, finish, local, status, laid, kit-current, refresh, drivers, downloads, clear-downloads or remove"; echo "RESULT stop"; exit 2;; esac
+case "$STEP" in preflight|stage|activate|rollback|cancel|installer|collections|finish|local|status|laid|kit-current|refresh|drivers|downloads|clear-downloads|remove|accel-on|accel-off) ;;
+  *) echo "STOP the step must be preflight, stage, activate, rollback, cancel, installer, collections, finish, local, status, laid, kit-current, refresh, drivers, downloads, clear-downloads, remove, accel-on or accel-off"; echo "RESULT stop"; exit 2;; esac
 # The way back (rollback, cancel) and status need no kit: they must work on a Mac whose kit is gone.
 kit_allowed() {  # stops, naming it, on a config key or boot argument the manifest may not set
   local key a n i
@@ -1089,6 +1105,15 @@ EOF
     printf '%s' "$val" | grep -Eq '^[0-9a-f]{8}$' || { bad "bad system-protection value in the kit"; return 1; }
     b=$(printf '%s' "$val" | xxd -r -p | base64) || { bad "could not encode the system-protection value"; return 1; }
     plutil -replace "NVRAM.Add.$NV.csr-active-config" -data "$b" "$AC" 2>/dev/null || plutil -insert "NVRAM.Add.$NV.csr-active-config" -data "$b" "$AC" || { bad "could not set the system-protection value"; return 1; }
+    # OpenCore writes a value of NVRAM > Add only when the variable is not there yet, unless the name is also listed
+    # under NVRAM > Delete. A PC that never lowered System Integrity Protection holds 00000000 from its first start
+    # (read on a PC on AMD graphics: Add 00000000, Delete without the name), so the value above would never have
+    # reached macOS 27, which does not start with the protection on. The name is added to that list when it is missing.
+    [ "$(plutil -type NVRAM.Delete "$AC" 2>/dev/null)" = dictionary ] || plutil -insert NVRAM.Delete -json '{}' "$AC" 2>/dev/null || { bad "the config has no NVRAM section to list the system-protection value in"; return 1; }
+    [ "$(plutil -type "NVRAM.Delete.$NV" "$AC" 2>/dev/null)" = array ] || plutil -insert "NVRAM.Delete.$NV" -json '[]' "$AC" 2>/dev/null || { bad "could not make the list of values OpenCore rewrites"; return 1; }
+    n=$(cget "NVRAM.Delete.$NV"); case "$n" in ''|*[!0-9]*) n=0;; esac; i=0; have=0
+    while [ "$i" -lt "$n" ]; do [ "$(cget "NVRAM.Delete.$NV.$i")" = csr-active-config ] && have=1; i=$((i + 1)); done
+    [ $have = 1 ] || plutil -insert "NVRAM.Delete.$NV.$n" -string csr-active-config "$AC" || { bad "could not list the system-protection value for OpenCore to rewrite"; return 1; }
   fi
 
   # The identity as hand-written tables, with this PC's own numbers. OpenCore's automatic mode needs a model it has
@@ -1230,7 +1255,13 @@ preflight)
     check $room "room for macOS 27: ${DISK_GB} GB free, $need_gb GB needed$([ "$have_gb" = 0 ] || echo " ($have_gb GB is already downloaded)")"
   fi
   if ST=$(read_state) && layout_ok "$ST"; then check 0 "Golden Gate state: $ST"; else check 1 "the startup partition matches its Golden Gate record"; fi
+  # asked only where macOS 27 still has to be laid down: a system that is already on its volumes needs no Preboot write
+  if ! mac27_laid_down; then
+    if sip_fs_ok; then check 0 "System Integrity Protection lets the install write this disk's Preboot volume"
+    else check 1 "System Integrity Protection lets the install write this disk's Preboot volume"; SIPHELP=1; fi
+  fi
   [ -z "$ESPHELP" ] || note "$ESPHELP"
+  [ -z "${SIPHELP:-}" ] || note "$SIP_FIX"
   [ $fails = 0 ] || stop "$fails check(s) failed. Nothing was changed"
   # What the later steps need from this macOS is asked for now, before anything is staged: the system tools, and
   # then the two kit scripts' own dry runs. A failure that is the running system's is said in one fixed sentence.
@@ -1619,6 +1650,9 @@ installer)
   # installer does not run on an Intel PC). The script's own dry run goes first; a refusal there changes nothing.
   # By default the new system has no account and starts at Apple's Setup Assistant, like a new Mac.
   from_26_or_stop "macOS 27 is laid down"
+  # the same question the check asks, here too: the one-button run passes the check over when the startup files are
+  # already staged, and the lay-down would only find out at its last step
+  sip_fs_ok || stop "$SIP_FIX. Nothing was changed"
   laydown_or_stop
   [ -z "$ACCOUNT" ] || printf '%s\n' "$ACCOUNT" | grep -Eq '^[A-Za-z0-9._-]{1,64}$' || stop "the account to bring over has a name this step will not pass on. Nothing was changed"
   if [ -n "$ACCOUNT" ]; then set -- --user "$ACCOUNT"; else set -- --no-user; fi
@@ -1734,6 +1768,76 @@ finish)
     rm -f "$KR"
   fi
   ok "the macOS 27 system package and driver are set up. Restart and choose macOS 27"
+  echo "RESULT ok"; exit 0;;
+
+accel-on|accel-off)
+  # Graphics acceleration on the test path, as a step of its own for after macOS 27 has reached its desktop once.
+  # The first start runs on the AMD/Intel driver alone, with the desktop drawn in software: the kit's installer says a
+  # window server that finds an accelerator before its display pipe is armed can die, so the accelerator is not part
+  # of the first set-up. accel-on adds it: the kit's AMD/Intel installer run again with --accel (it links NMXAccel
+  # into the auxiliary collection and places the Metal plugin and the Vulkan drivers), the Vulkan loader the Metal
+  # plugin opens first, and the boot argument nmxfb_pipe=1, without which the accelerator stays off by its own rule.
+  # The kit's start-up gate arms the display pipe at each start and goes back to the software desktop when that
+  # fails. accel-off takes all three back. Both run from macOS 15 or 26, against the macOS 27 volumes.
+  [ $CONFIRM = 1 ] || stop "graphics acceleration is turned on or off only when you confirm it. Nothing was changed"
+  state_or_stop
+  [ "$ST" = staged ] || [ "$ST" = active ] || stop "there are no macOS 27 startup files on this partition yet (state: $ST). Nothing was changed"
+  from_26_or_stop "graphics acceleration for macOS 27 is changed"
+  packages_or_stop
+  [ "$GFX" = test ] || stop "this step is for a PC that starts macOS 27 on the AMD/Intel test driver; this one is on the ${GFX:-NVIDIA} path, which has its own. Nothing was changed"
+  mac27_volumes mount || stop "$WHY. Nothing was changed"
+  case "$(plutil -extract ProductVersion raw -o - "$SYS/System/Library/CoreServices/SystemVersion.plist" 2>/dev/null)" in 27.*) ;;
+    *) stop "the volume this app laid down does not hold macOS 27. Nothing was changed";; esac
+  [ -f "$DATA/Library/NullMoth/golden-gate/igpu/added.list" ] && [ ! -L "$DATA/Library/NullMoth/golden-gate/igpu/added.list" ] \
+    || stop "macOS 27 has not been set up on the AMD/Intel driver yet: finish Prepare for Golden Gate and start macOS 27 once first. Nothing was changed"
+  owners_or_stop
+  if [ "$ST" = active ]; then T=OC; else T=$STAGED; fi
+  AC="$EFI/$T/config.plist"; [ -f "$AC" ] || stop "the macOS 27 startup files have no config. Nothing was changed"
+  ARG=nmxfb_pipe=1; case " $BOOT_ARGS_ALLOWED " in *" $ARG "*) ;; *) stop "this build may not write $ARG. Nothing was changed";; esac
+  set_arg() {   # $1 = on or off: the argument is in boot-args once, or not at all; written to a copy, then moved into place
+    local args kept="" t; args=$(cget "NVRAM.Add.$NV.boot-args")
+    for t in $args; do [ "$t" = "$ARG" ] || kept="$kept $t"; done
+    [ "$1" = on ] && kept="$kept $ARG"; kept=${kept# }
+    cp "$AC" "$AC.new" || return 1
+    plutil -replace "NVRAM.Add.$NV.boot-args" -string "$kept" "$AC.new" && plutil -lint "$AC.new" >/dev/null && mv -f "$AC.new" "$AC" || { rm -f "${AC:?}.new"; return 1; }
+  }
+  LDIR27="$DATA/Library/GPUBundles/nvmtl"; LSRC="$KIT/$(kv driver.dir)/payload/Library/GPUBundles/nvmtl"
+  if [ "$STEP" = accel-on ]; then
+    step "Checking the accelerated graphics install (dry run)"
+    tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. Nothing was changed"
+    /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --accel --dry-run || stop "the AMD/Intel installer refused its dry run with the accelerator. Nothing was changed"
+    # The Metal plugin opens /Library/GPUBundles/nvmtl/libvulkan.dylib before any driver. Only the NVIDIA package
+    # installs that loader; a PC that never ran it has none, and the plugin would find no device. It is taken from the
+    # kit's NVIDIA package: one real file, the newest libvulkan.<version>.dylib there, and the two names that lead to it.
+    LOADER=$(ls "$LSRC" 2>/dev/null | grep -E '^libvulkan\.[0-9]+\.[0-9]+\.[0-9]+\.dylib$' | sort | tail -n 1)
+    [ -n "$LOADER" ] && [ -f "$LSRC/$LOADER" ] && [ ! -L "$LSRC/$LOADER" ] || stop "the v3 kit carries no Vulkan loader for the Metal plugin. Nothing was changed"
+    step "Installing the accelerator on macOS 27"
+    /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --accel --apply || stop "the AMD/Intel installer stopped; see its lines above. The startup files were not changed"
+    [ -d "$LDIR27" ] && [ ! -L "$LDIR27" ] && [ ! -L "$DATA/Library/GPUBundles" ] && [ ! -L "$DATA/Library" ] || stop "the Vulkan drivers' folder on macOS 27 is not a plain folder. The startup files were not changed"
+    NEW="${LDIR27:?}/${LOADER:?}.gg-new"
+    cp "$LSRC/$LOADER" "$NEW" && { chown root:wheel "$NEW" 2>/dev/null; chmod 755 "$NEW"; } && mv -f "$NEW" "$LDIR27/$LOADER" \
+      && ln -sfh "$LOADER" "$LDIR27/libvulkan.1.dylib" && ln -sfh libvulkan.1.dylib "$LDIR27/libvulkan.dylib" \
+      || stop "the Vulkan loader could not be placed. The startup files were not changed"
+    cmp -s "$LSRC/$LOADER" "$LDIR27/libvulkan.dylib" || stop "the Vulkan loader on macOS 27 is not the kit's. The startup files were not changed"
+    ok "the Metal plugin's Vulkan loader ($LOADER) is in place"
+    set_arg on || stop "the accelerator is installed, but $ARG could not be written to the macOS 27 startup files; it stays off until it is"
+    ok "graphics acceleration is on for macOS 27 ($ARG in EFI/$T)"
+    note "restart into macOS 27. If the display pipe cannot be armed at a start, the kit's start-up gate draws the desktop in software as before"
+    note "if macOS 27 no longer reaches its desktop: start this macOS and turn acceleration off again"
+  else
+    step "Turning graphics acceleration off for macOS 27"
+    set_arg off || stop "$ARG could not be taken out of the macOS 27 startup files. Nothing was changed"
+    ok "$ARG is out of EFI/$T: the accelerator stays off at the next start"
+    tree_trusted "$KIT" || stop "the private copy of the v3 kit changed. The accelerator's files are still on macOS 27, unused"
+    # the collection is linked again without the accelerator, so that it is not loaded at all
+    /bin/bash "$PAY/$inst" --payload "$PAY" --system "$SYS" --data "$DATA" --esp "$ROOT" --apply || stop "the AMD/Intel installer stopped; see its lines above. The accelerator is switched off by its boot argument all the same"
+    # the loader goes too: the two names, then the kit's own file (a file that is not the kit's is left where it is)
+    if [ -d "$LDIR27" ] && [ ! -L "$LDIR27" ]; then
+      for f in libvulkan.dylib libvulkan.1.dylib; do [ ! -L "$LDIR27/$f" ] || unlink "$LDIR27/$f"; done
+      for f in "$LDIR27"/libvulkan.[0-9]*.[0-9]*.[0-9]*.dylib; do [ -f "$f" ] && [ ! -L "$f" ] && cmp -s "$f" "$LSRC/${f##*/}" && unlink "$f"; done
+    fi
+    ok "macOS 27 is back on the driver alone, with the desktop drawn in software"
+  fi
   echo "RESULT ok"; exit 0;;
 
 local)
